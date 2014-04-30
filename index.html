@@ -1,0 +1,126 @@
+<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="./styles/main.css">
+  </head>
+  <body>
+    <div class="script">
+      <script src="./third-party/noise.js"></script>
+      <script src="./third-party/two.js"></script>
+      <script src="./src/spark.js"></script>
+      <script>
+
+        var two = new Two({
+          type: Two.Types.canvas,
+          fullscreen: true,
+          autostart: true
+        }).appendTo(document.body);
+
+        noise.seed(Math.random());
+
+        var purple = { r: 133, g: 96, b: 168 }, orange = { r: 246, g: 149, b: 100 };
+        var drag = 0.0625;
+
+        var colors = [purple, orange];
+        var timeElapsed = 0;
+
+        var background = two.makeRectangle(two.width / 2, two.height / 2, two.width, two.height);
+        background.color = _.clone(purple);
+        background.dest = orange;
+
+        background.color.toString = function() {
+          return 'rgb(' +
+            Math.floor(background.color.r) + ',' +
+            Math.floor(background.color.g) + ',' +
+            Math.floor(background.color.b) + ')';
+        };
+
+        background.noStroke().fill = background.color.toString();
+
+        var amount = 20;
+
+        var noiseStrength = 10;
+        var noiseScale = 300;
+        var step = 3;
+        var agent = new Two.Vector();
+
+        var sparks = _.map(_.range(amount), function(i) {
+
+          var startAngle = Math.random() * Math.PI * 2;
+          var endAngle = Math.random() * (Math.PI * 2 - startAngle) + startAngle;
+
+          var spark = new Spark({
+            amount: Math.floor(Math.random() * 10),
+            radius: 25
+          }).addTo(two);
+
+          spark.step = Math.random() * step;
+          spark.translation.set(Math.random() * two.width, Math.random() * two.height);
+          spark.scale = Math.random() + 1;
+
+          return spark;
+
+        });
+
+        two
+          .bind('resize', function() {
+
+            var w = two.width / 2;
+            var h = two.height / 2;
+
+            background.translation.set(w, h);
+            background.vertices[0].set(- w, - h);
+            background.vertices[1].set(w, - h);
+            background.vertices[2].set(w, h);
+            background.vertices[3].set(- w, h);
+
+          })
+          .bind('update', function(frameCount, timeDelta) {
+
+            if (!timeDelta) {
+              return;
+            }
+
+            for (var i = 0, l = sparks.length; i < l; i++) {
+
+              var spark = sparks[i];
+
+              var angle = noise.perlin2(spark.translation.x / noiseScale, spark.translation.y / noiseScale) * noiseStrength;
+              agent.set(spark.step * Math.cos(angle), spark.step * Math.sin(angle));
+              spark.translation.addSelf(agent);
+
+              var x = spark.translation.x;
+              var y = spark.translation.y;
+
+              if (x < - spark.radius || x > two.width + spark.radius ||
+                y < - spark.radius || y > two.height + spark.radius) {
+                spark.translation.set(
+                  Math.random() * two.width,
+                  Math.random() * two.height
+                );
+                spark.opacity = 0;
+              }
+
+              spark.update();
+              spark.opacity += (0.5 - spark.opacity) * 0.0625;
+
+            }
+
+            if (timeElapsed > 2000) {
+              background.dest = colors[Math.floor(Math.random() * colors.length)];
+              timeElapsed = 0;
+            }
+
+            background.color.r += (background.dest.r - background.color.r) * drag;
+            background.color.g += (background.dest.g - background.color.g) * drag;
+            background.color.b += (background.dest.b - background.color.b) * drag;
+
+            background.noStroke().fill = background.color.toString();
+            timeElapsed += timeDelta;
+
+          });
+
+      </script>
+    </div>
+  </body>
+</html>
