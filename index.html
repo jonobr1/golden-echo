@@ -37,11 +37,11 @@
 
         background.noStroke().fill = background.color.toString();
 
-        var amount = 20;
+        var amount = 25;
 
-        var noiseStrength = 10;
+        var noiseStrength = 20;
         var noiseScale = 300;
-        var step = 3;
+        var step = 5;
         var agent = new Two.Vector();
 
         var sparks = _.map(_.range(amount), function(i) {
@@ -50,15 +50,37 @@
           var endAngle = Math.random() * (Math.PI * 2 - startAngle) + startAngle;
 
           var spark = new Spark({
-            amount: Math.floor(Math.random() * 10),
-            radius: 25
+            amount: Math.floor(Math.random() * 30) + 1,
+            radius: Math.random() * 14 + 1,
+            linewidth: Math.random() * 5
           }).addTo(two);
 
-          spark.step = Math.random() * step;
+          spark.step = Math.random() * step; //Math.min(1 + Math.random() * step / spark.radius, step);
           spark.translation.set(Math.random() * two.width, Math.random() * two.height);
-          spark.scale = Math.random() + 1;
+          spark.scale = Math.random() * 2 + 1;
 
           return spark;
+
+        });
+
+        window.addEventListener('click', function(e) {
+
+          for (var i = 0, l = sparks.length; i < l; i++) {
+
+            var spark = sparks[i];
+
+            if (spark.visible) {
+              continue;
+            }
+
+            var x = e.clientX + Math.random() * 100 - 50;
+            var y = e.clientY + Math.random() * 100 - 50;
+
+            spark.visible = true;
+            spark.opacity = 0;
+            spark.translation.set(x, y);
+
+          }
 
         });
 
@@ -85,6 +107,10 @@
 
               var spark = sparks[i];
 
+              if (!spark.visible) {
+                continue;
+              }
+
               var angle = noise.perlin2(spark.translation.x / noiseScale, spark.translation.y / noiseScale) * noiseStrength;
               agent.set(spark.step * Math.cos(angle), spark.step * Math.sin(angle));
               spark.translation.addSelf(agent);
@@ -98,11 +124,12 @@
                   Math.random() * two.width,
                   Math.random() * two.height
                 );
+                // spark.visible = false;
                 spark.opacity = 0;
               }
 
               spark.update();
-              spark.opacity += (0.5 - spark.opacity) * 0.0625;
+              spark.opacity += (0.33 - spark.opacity) * 0.0625;
 
             }
 

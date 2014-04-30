@@ -10,6 +10,7 @@
       radius: 50,
       startAngle: 0,
       endAngle: Math.PI * 2,
+      linewidth: 5,
       stroke: 'white'
     });
 
@@ -17,6 +18,7 @@
     this.startAngle = params.startAngle;
     this.endAngle = params.endAngle;
     this.stroke = params.stroke;
+    this.linewidth = params.linewidth;
 
     this.translation = new Two.Vector();
 
@@ -28,10 +30,13 @@
 
     Properties: [
       'stroke',
-      'scale'
+      'scale',
+      'visible'
     ],
 
     createShape: function(i) {
+
+      // TODO: Create more sparkline-like shape... clockwise winding.
 
       var line = new Two.Polygon([
         new Two.Anchor(),
@@ -39,7 +44,7 @@
       ]);
 
       line.noFill().stroke = this.stroke;
-      line.linewidth = 5;
+      line.linewidth = this.linewidth * Math.random() + 1;
       line.cap = line.join = 'round';
 
       return line;
@@ -60,6 +65,7 @@
 
     _stroke: 'white',
     _scale: 1,
+    _visible: true,
 
     rotation: 0,
 
