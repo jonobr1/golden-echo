@@ -5,9 +5,11 @@
   </head>
   <body>
     <div class="script">
+      <script src="./third-party/jquery.js"></script>
       <script src="./third-party/noise.js"></script>
       <script src="./third-party/two.js"></script>
       <script src="./src/spark.js"></script>
+      <script src="./src/tomahawk.js"></script>
       <script>
 
         var two = new Two({
@@ -18,7 +20,7 @@
 
         noise.seed(Math.random());
 
-        var purple = { r: 133, g: 96, b: 168 }, orange = { r: 246, g: 149, b: 100 };
+        var purple = { r: 33, g: 33, b: 33 }, orange = { r: 45, g: 45, b: 45 };
         var drag = 0.0625;
 
         var colors = [purple, orange];
@@ -37,7 +39,7 @@
 
         background.noStroke().fill = background.color.toString();
 
-        var amount = 25;
+        var amount = 15;
 
         var noiseStrength = 20;
         var noiseScale = 300;
@@ -55,32 +57,45 @@
             linewidth: Math.random() * 5
           }).addTo(two);
 
-          spark.step = Math.random() * step; //Math.min(1 + Math.random() * step / spark.radius, step);
+          spark.step = Math.random() * step;
           spark.translation.set(Math.random() * two.width, Math.random() * two.height);
           spark.scale = Math.random() * 2 + 1;
+          spark.opacity = 0;
 
           return spark;
 
         });
 
+        var tomahawk = new Tomahawk(two);
+        tomahawk.translation.set(two.width / 2, two.height / 2);
+        tomahawk.ready(function() {
+          tomahawk.shape.opacity = 0.50;
+          tomahawk.shape.fill = 'white';
+          tomahawk.shape.stroke = 'white';//rgb(255, 75, 75)';
+          tomahawk.shape.linewidth = 10;
+          tomahawk.shape.join = 'round';
+        });
+
         window.addEventListener('click', function(e) {
 
-          for (var i = 0, l = sparks.length; i < l; i++) {
+          tomahawk.explode({ x: e.clientX, y: e.clientY }, 200 * Math.random());
 
-            var spark = sparks[i];
+          // for (var i = 0, l = sparks.length; i < l; i++) {
 
-            if (spark.visible) {
-              continue;
-            }
+          //   var spark = sparks[i];
 
-            var x = e.clientX + Math.random() * 100 - 50;
-            var y = e.clientY + Math.random() * 100 - 50;
+          //   if (spark.visible) {
+          //     continue;
+          //   }
 
-            spark.visible = true;
-            spark.opacity = 0;
-            spark.translation.set(x, y);
+          //   var x = e.clientX + Math.random() * 100 - 50;
+          //   var y = e.clientY + Math.random() * 100 - 50;
 
-          }
+          //   spark.visible = true;
+          //   spark.opacity = 0;
+          //   spark.translation.set(x, y);
+
+          // }
 
         });
 
@@ -102,6 +117,8 @@
             if (!timeDelta) {
               return;
             }
+
+            tomahawk.update();
 
             for (var i = 0, l = sparks.length; i < l; i++) {
 
