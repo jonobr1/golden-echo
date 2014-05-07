@@ -1,0 +1,114 @@
+<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="./styles/clockhand.css">
+  </head>
+  <body>
+    <div class="scripts">
+      <script src="./third-party/jquery.js"></script>
+      <script src="./third-party/two.js"></script>
+      <script src="./third-party/tween.js"></script>
+      <script src="./src/clockhand.js"></script>
+      <script>
+
+        var two, container;
+
+        Clockhand.loaded(function() {
+
+          two = new Two({
+            fullscreen: true,
+            autostart: true
+          }).appendTo(document.body);
+
+          container = two.makeGroup();
+
+          var cols = 9, rows = 5;
+
+          var clockhands = _.map(_.range(cols * rows), function(i) {
+
+            var col = (i % cols);
+            var row = Math.floor(i / cols);
+
+            var pctx = col / (cols - 1);
+            var pcty = row / (rows - 1);
+
+            var a = new Clockhand(two, 'Hour');
+            var b = new Clockhand(two, 'Minute');
+
+            var x = pctx * two.width - two.width / 2, y = pcty * two.height - two.height / 2;
+
+            a.shape.translation.set(x, y);
+            b.shape.translation.set(x, y);
+
+            a.shape.rotation = a.rotation = Math.PI * Math.random() * 2;
+            b.shape.rotation = b.rotation = Math.PI * Math.random() * 2;
+
+            a.shape.fill = b.shape.fill = 'rgba(255, 255, 200, 0.7)';
+            a.shape.scale = b.shape.scale = Math.random() * 0.12 + 0.21;
+            a.shape.scale += 0.1;
+
+            a.addTo(container);
+            b.addTo(container);
+
+            two.bind('update', function() {
+              a.update();
+              b.update();
+            });
+
+            return { minute: b, hour: a };
+
+          });
+
+          container.translation.set(two.width / 2, two.height / 2);
+          container.scale = 4;
+
+          var pulse = _.once(function() {
+
+            var count = 0;
+
+            two.bind('update', function() {
+              container.scale = map(Math.cos(count / 60), - 1, 1, 1, 4);
+              count++;
+            });
+
+            $(document.body).addClass('pulse');
+
+          });
+
+          var times = 1;
+          var threshold = 3;
+
+          $(window)
+            .bind('keydown', function(e) {
+
+              pulse();
+
+            })
+            .bind('click', function() {
+
+              _.each(clockhands, function(c) {
+
+                c.minute.rotation += Math.PI / 2;
+                if (times > threshold) {
+                  c.hour.rotation += Math.PI;
+                }
+              });
+
+              if (times > threshold) {
+                times = 0;
+              }
+
+              times++;
+
+            });
+
+          function map(value, start1, stop1, start2, stop2) {
+              return start2 + (stop2 - start2) * ((value - start1) / (stop1 - start1));
+          }
+
+        });
+
+      </script>
+    </div>
+  </body>
+</html>

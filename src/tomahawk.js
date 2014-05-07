@@ -99,6 +99,7 @@
             .subSelf(child.translation)
             .multiplyScalar(this.drag)
         );
+        child.opacity += (child.destination.opacity - child.opacity) * this.drag;
       }
 
       if (exploded) {
@@ -126,6 +127,7 @@
             amplitude * Math.sin(theta) * distance
           )
         );
+        child.destination.opacity = Math.pow(distance, - 12);
 
       }
 
@@ -140,6 +142,7 @@
         var child = this.shape.children[i];
         // child.translation.copy(child.origin);
         child.destination.copy(child.origin);
+        child.destination.opacity = 1;
       }
 
       return this;
@@ -149,8 +152,6 @@
   });
 
   $(function() {
-
-    var two = new Two();
 
     $.get('./assets/shapes/tomahawk.svg', function(resp) {
 

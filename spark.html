@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="./styles/clockhand.css">
+  </head>
+  <body>
+    <div class="scripts">
+      <script src="./third-party/jquery.js"></script>
+      <script src="./third-party/two.js"></script>
+      <script src="./third-party/tween.js"></script>
+      <script src="./src/spark.js"></script>
+      <script>
+
+        var timeline = new TWEEN();
+
+        var two = new Two({
+          type: Two.Types.canvas,
+          fullscreen: true,
+          autostart: true
+        }).appendTo(document.body);
+
+        var spark = new Spark({
+          amount: 64,
+          radius: two.height / 3,
+          linewidth: 24,
+          timeline: timeline,
+          stroke: 'rgb(255, 255, 200)'
+        }).addTo(two);
+
+        spark.translation.set(two.width / 2, two.height / 2);
+        spark.opacity = 0.33;
+
+        two.bind('update', function() {
+          timeline.update();
+          spark.update();
+        });
+
+        $(window)
+          .bind('mousedown', function() {
+            // spark.opacity = 0.33;
+            spark.start();
+          })
+          .bind('mouseup', function() {
+            // spark.opacity = 0.0;
+            spark.stop();
+          });
+
+      </script>
+    </div>
+  </body>
+</html>

@@ -8,94 +8,116 @@
       <script src="./third-party/jquery.js"></script>
       <script src="./third-party/noise.js"></script>
       <script src="./third-party/two.js"></script>
+      <script src="./third-party/tween.js"></script>
       <script src="./src/spark.js"></script>
       <script src="./src/tomahawk.js"></script>
+      <script src="./src/hammer.js"></script>
+      <script src="./src/sublimation.js"></script>
+      <script src="./src/palette.js"></script>
       <script>
 
+        var timeline = new TWEEN();
+
         var two = new Two({
-          type: Two.Types.canvas,
+          // type: Two.Types.canvas,
           fullscreen: true,
           autostart: true
         }).appendTo(document.body);
 
         noise.seed(Math.random());
 
-        var purple = { r: 45, g: 33, b: 33 }, orange = { r: 45, g: 45, b: 50 };
         var drag = 0.0625;
 
-        var colors = [purple, orange];
-        var timeElapsed = 0;
+        var sublimation = new Sublimation({
+            colorA: palette.toString('background'),
+            colorB: palette.toString('accent')
+          })
+          .setTimeline(timeline).addTo(two.scene);
 
-        var background = two.makeRectangle(two.width / 2, two.height / 2, two.width, two.height);
-        background.color = _.clone(purple);
-        background.dest = orange;
+        sublimation.group.translation.set(two.width / 2, two.height / 2);
 
-        background.color.toString = function() {
-          return 'rgb(' +
-            Math.floor(background.color.r) + ',' +
-            Math.floor(background.color.g) + ',' +
-            Math.floor(background.color.b) + ')';
-        };
-
-        background.noStroke().fill = background.color.toString();
-
-        var amount = 15;
+        var amount = 10;
 
         var noiseStrength = 20;
         var noiseScale = 300;
         var step = 5;
         var agent = new Two.Vector();
 
-        var sparks = _.map(_.range(amount), function(i) {
+        var tomahawks = _.map(_.range(1), function(i) {
 
-          var startAngle = Math.random() * Math.PI * 2;
-          var endAngle = Math.random() * (Math.PI * 2 - startAngle) + startAngle;
+          var tomahawk = new Tomahawk(two);
+          tomahawk.translation.set(two.width / 2, two.height / 2);
+          tomahawk.ready(function() {
+            tomahawk.shape.fill = palette.toString('light');
+            tomahawk.shape.noStroke();
+            tomahawk.shape.join = 'round';
+            _.each(tomahawk.shape.children, function(child) {
+              child.scale = 1.01;
+            });
+          });
 
-          var spark = new Spark({
-            amount: Math.floor(Math.random() * 30) + 1,
-            radius: Math.random() * 14 + 1,
-            linewidth: Math.random() * 5
-          }).addTo(two);
-
-          spark.step = Math.random() * step;
-          spark.translation.set(Math.random() * two.width, Math.random() * two.height);
-          spark.scale = Math.random() * 2 + 1;
-          spark.opacity = 0;
-
-          return spark;
+          return tomahawk;
 
         });
 
-        var tomahawk = new Tomahawk(two);
-        tomahawk.translation.set(two.width / 2, two.height / 2);
-        tomahawk.ready(function() {
-          tomahawk.shape.opacity = 0.50;
-          tomahawk.shape.fill = 'white';
-          tomahawk.shape.stroke = 'white';//rgb(255, 75, 75)';
-          tomahawk.shape.linewidth = 10;
-          tomahawk.shape.join = 'round';
+        // var sparks = _.map(_.range(amount), function(i) {
+
+        //   var startAngle = Math.random() * Math.PI * 2;
+        //   var endAngle = Math.random() * (Math.PI * 2 - startAngle) + startAngle;
+
+        //   var spark = new Spark({
+        //     amount: Math.floor(Math.random() * 30) + 1,
+        //     radius: Math.random() * 14 + 1,
+        //     linewidth: Math.random() * 5,
+        //     stroke: palette.toString('light')
+        //   }).addTo(two);
+        //   spark.translation.set(two.width / 2, two.height / 2);
+
+        //   spark.step = Math.random() * step;
+        //   spark.translation.set(Math.random() * two.width, Math.random() * two.height);
+        //   spark.scale = Math.random() * 2 + 1;
+        //   spark.opacity = 0;
+
+        //   return spark;
+
+        // });
+
+        // var sparkle = new Spark({
+        //   amount: 30,
+        //   radius: 12,
+        //   linewidth: 5,
+        //   stroke: palette.toString('solid')
+        // }).addTo(two);
+
+        // sparkle.translation.set(two.width / 2, two.height / 2);
+        // sparkle.scale = 12;
+        // sparkle.opacity = 0.33;
+
+        var hammers = _.map(_.range(amount), function(i) {
+
+          var hammer = new Hammer(33, 100, 200).setTimeline(timeline).addTo(two.scene);
+          hammer.shape.fill = palette.toString('solid');
+          hammer.shape.translation.set(two.width / 2, two.height / 2);
+          // hammer.shape.scale = Math.random() * 2 + 1;
+
+          return hammer;
+
         });
 
         window.addEventListener('click', function(e) {
 
-          tomahawk.explode({ x: e.clientX, y: e.clientY }, 200 * Math.random());
+          var mouse = { x: e.clientX, y: e.clientY };
 
-          // for (var i = 0, l = sparks.length; i < l; i++) {
+          _.each(tomahawks, function(tomahawk) {
+            tomahawk.explode(mouse, 200 * Math.random());
+          });
 
-          //   var spark = sparks[i];
+          var hammer = hammers[Math.floor(Math.random() * hammers.length)];
 
-          //   if (spark.visible) {
-          //     continue;
-          //   }
+          hammer.shape.translation.set(Math.random() * two.width, Math.random() * two.height);
+          hammer.start();
 
-          //   var x = e.clientX + Math.random() * 100 - 50;
-          //   var y = e.clientY + Math.random() * 100 - 50;
-
-          //   spark.visible = true;
-          //   spark.opacity = 0;
-          //   spark.translation.set(x, y);
-
-          // }
+          sublimation.start();
 
         });
 
@@ -105,11 +127,8 @@
             var w = two.width / 2;
             var h = two.height / 2;
 
-            background.translation.set(w, h);
-            background.vertices[0].set(- w, - h);
-            background.vertices[1].set(w, - h);
-            background.vertices[2].set(w, h);
-            background.vertices[3].set(- w, h);
+            // sparkle.translation.set(w, h);
+            sublimation.group.translation.set(w, h);
 
           })
           .bind('update', function(frameCount, timeDelta) {
@@ -118,49 +137,45 @@
               return;
             }
 
-            tomahawk.update();
+            timeline.update();
 
-            for (var i = 0, l = sparks.length; i < l; i++) {
+            var i, l;
 
-              var spark = sparks[i];
-
-              if (!spark.visible) {
-                continue;
-              }
-
-              var angle = noise.perlin2(spark.translation.x / noiseScale, spark.translation.y / noiseScale) * noiseStrength;
-              agent.set(spark.step * Math.cos(angle), spark.step * Math.sin(angle));
-              spark.translation.addSelf(agent);
-
-              var x = spark.translation.x;
-              var y = spark.translation.y;
-
-              if (x < - spark.radius || x > two.width + spark.radius ||
-                y < - spark.radius || y > two.height + spark.radius) {
-                spark.translation.set(
-                  Math.random() * two.width,
-                  Math.random() * two.height
-                );
-                // spark.visible = false;
-                spark.opacity = 0;
-              }
-
-              spark.update();
-              spark.opacity += (0.33 - spark.opacity) * 0.0625;
-
+            for (i = 0, l = tomahawks.length; i < l; i++) {
+              tomahawks[i].update();
             }
 
-            if (timeElapsed > 2000) {
-              background.dest = colors[Math.floor(Math.random() * colors.length)];
-              timeElapsed = 0;
-            }
+            // sparkle.update();
 
-            background.color.r += (background.dest.r - background.color.r) * drag;
-            background.color.g += (background.dest.g - background.color.g) * drag;
-            background.color.b += (background.dest.b - background.color.b) * drag;
+            // for (i = 0, l = sparks.length; i < l; i++) {
 
-            background.noStroke().fill = background.color.toString();
-            timeElapsed += timeDelta;
+            //   var spark = sparks[i];
+
+            //   if (!spark.visible) {
+            //     continue;
+            //   }
+
+            //   var angle = noise.perlin2(spark.translation.x / noiseScale, spark.translation.y / noiseScale) * noiseStrength;
+            //   agent.set(spark.step * Math.cos(angle), spark.step * Math.sin(angle));
+            //   spark.translation.addSelf(agent);
+
+            //   var x = spark.translation.x;
+            //   var y = spark.translation.y;
+
+            //   if (x < - spark.radius || x > two.width + spark.radius ||
+            //     y < - spark.radius || y > two.height + spark.radius) {
+            //     spark.translation.set(
+            //       Math.random() * two.width,
+            //       Math.random() * two.height
+            //     );
+            //     // spark.visible = false;
+            //     spark.opacity = 0;
+            //   }
+
+            //   spark.update();
+            //   spark.opacity += (0.33 - spark.opacity) * 0.0625;
+
+            // }
 
           });
 
