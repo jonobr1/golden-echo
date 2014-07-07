@@ -1,0 +1,81 @@
+<!doctype html>
+<html>
+  <head>
+    <style>
+      * { margin: 0; padding: 0; }
+      canvas {
+        position: absolute;
+        display: block;
+        top: 0;
+        left: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="scripts">
+      <script src="./third-party/three.js"></script>
+      <script src="./third-party/obj-loader.js"></script>
+      <script>
+
+        var camera, scene, renderer;
+        var geometry, material, mesh;
+        var pointcloud;
+
+        init();
+        animate();
+
+        function init() {
+
+          var loader = new THREE.OBJLoader();
+          loader.load('./models/kimbra6sitting_finedetail_nofill.obj', function(obj) {
+
+            var geometry = obj.children[0].geometry;
+
+            mesh = new THREE.Mesh(geometry, new THREE.MeshNormalMaterial());
+            mesh.rotation.x = - Math.PI / 2;
+            mesh.rotation.z = - Math.PI / 2;
+
+            mesh.geometry.computeBoundingSphere();
+            mesh.position.y = - mesh.geometry.boundingSphere.radius / 2;
+
+            scene.add(mesh);
+
+            // pointcloud = new THREE.PointCloud(geometry.clone(), new THREE.PointCloudMaterial({
+            //   color: 0xffff00,
+            //   size: 1,
+            //   opacity: 0.75
+            // }));
+
+            // pointcloud.rotation.x = - Math.PI / 2;
+            // pointcloud.rotation.z = - Math.PI / 2;
+
+            // pointcloud.geometry.computeBoundingSphere();
+            // pointcloud.position.y = - pointcloud.geometry.boundingSphere.radius / 2;
+
+            // scene.add(pointcloud);
+
+          });
+
+          camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
+          camera.position.z = 1000;
+
+          scene = new THREE.Scene();
+
+          renderer = new THREE.WebGLRenderer();
+          renderer.setSize(window.innerWidth, window.innerHeight);
+
+          document.body.appendChild(renderer.domElement);
+
+        }
+
+        function animate() {
+
+          requestAnimationFrame(animate);
+          renderer.render(scene, camera);
+
+        }
+
+      </script>
+    </div>
+  </body>
+</html>
