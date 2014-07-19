@@ -1878,8 +1878,9 @@ var Backbone = Backbone || {};
         _.extend(styles, attributes);
 
         // Similarly visibility is influenced by the value of both display and visibility.
-        // Calculate a unified value here
-        styles.visible = (styles.display !== 'none') && (styles.visibility === 'visible');
+        // Calculate a unified value here which defaults to `true`.
+        styles.visible = !(_.isUndefined(styles.display) && styles.display === 'none')
+          || (_.isUndefined(styles.visibility) && styles.visibility === 'hidden');
 
         // Now iterate the whole thing
         for (key in styles) {
@@ -1893,9 +1894,7 @@ var Backbone = Backbone || {};
               // Might happen when transform string is empty or not valid.
               if (m === null) break;
 
-              var matrix = new Two.Matrix(m.a, m.b, m.c, m.d, m.e, m.f);
-
-              // Option 1: edit the underlying matrix and don't force an auto calc.
+              // // Option 1: edit the underlying matrix and don't force an auto calc.
               // var m = node.getCTM();
               // elem._matrix.manual = true;
               // elem._matrix.set(m.a, m.b, m.c, m.d, m.e, m.f);
@@ -2020,7 +2019,7 @@ var Backbone = Backbone || {};
           var commands = path.match(/[a-df-z][^a-df-z]*/ig);
           var last = commands.length - 1;
 
-          // Go through commands and look for Inkscape irregularities
+          // Split up polybeziers
 
           _.each(commands.slice(0), function(command, i) {
 
@@ -2034,18 +2033,26 @@ var Backbone = Backbone || {};
             }
 
             switch (lower) {
-              case 'm':
-              case 'l':
               case 'h':
               case 'v':
+                if (items.length > 1) {
+                  bin = 1;
+                }
+                break;
+              case 'm':
+              case 'l':
+              case 't':
                 if (items.length > 2) {
                   bin = 2;
                 }
                 break;
-              case 'c':
               case 's':
-              case 't':
               case 'q':
+                if (items.length > 4) {
+                  bin = 4;
+                }
+                break;
+              case 'c':
                 if (items.length > 6) {
                   bin = 6;
                 }
@@ -2057,9 +2064,24 @@ var Backbone = Backbone || {};
 
             if (bin) {
 
-              for (var j = 0, l = items.length; j < l; j+=bin) {
+              for (var j = 0, l = items.length, times = 0; j < l; j+=bin) {
 
-                result.push([type].concat(items.slice(j, j + bin)).join(' '));
+                var ct = type;
+                if (times > 0) {
+
+                  switch (type) {
+                    case 'm':
+                      ct = 'l';
+                      break;
+                    case 'M':
+                      ct = 'L';
+                      break;
+                  }
+
+                }
+
+                result.push([ct].concat(items.slice(j, j + bin)).join(' '));
+                times++;
 
               }
 
@@ -2162,7 +2184,7 @@ var Backbone = Backbone || {};
                 y1 = coord.y;
 
                 if (!control) {
-                  control = new Two.Vector().copy(coord);
+                  control = new Two.Vector();//.copy(coord);
                 }
 
                 if (lower === 'c') {
@@ -2179,7 +2201,7 @@ var Backbone = Backbone || {};
                   // Calculate reflection control point for proper x2, y2
                   // inclusion.
 
-                  reflection = Two.Utils.getReflection(coord, control, relative);
+                  reflection = getReflection(coord, control, relative);
 
                   x2 = reflection.x;
                   y2 = reflection.y;
@@ -2223,7 +2245,7 @@ var Backbone = Backbone || {};
                 y1 = coord.y;
 
                 if (!control) {
-                  control = new Two.Vector().copy(coord);
+                  control = new Two.Vector();//.copy(coord);
                 }
 
                 if (control.isZero()) {
@@ -2243,7 +2265,7 @@ var Backbone = Backbone || {};
 
                 } else {
 
-                  reflection = Two.Utils.getReflection(coord, control, relative);
+                  reflection = getReflection(coord, control, relative);
 
                   x3 = reflection.x;
                   y3 = reflection.y;
@@ -2582,16 +2604,16 @@ var Backbone = Backbone || {};
       },
 
       /**
-       * Get the reflection of a point "b" about point "a".
+       * Get the reflection of a point "b" about point "a". Where "a" is in
+       * absolute space and "b" is relative to "a".
+       *
+       * http://www.w3.org/TR/SVG11/implnote.html#PathElementImplementationNotes
        */
       getReflection: function(a, b, relative) {
 
-        var d = b.distanceTo(Two.Vector.zero);
-        var theta = angleBetween(Two.Vector.zero, b);
-
         return new Two.Vector(
-          d * cos(theta) + (relative ? 0 : a.x),
-          d * sin(theta) + (relative ? 0 : a.y)
+          2 * a.x - (b.x + a.x) - (relative ? a.x : 0),
+          2 * a.y - (b.y + a.y) - (relative ? a.y : 0)
         );
 
       },
@@ -2656,7 +2678,7 @@ var Backbone = Backbone || {};
 
         Array.call(this);
 
-        if(arguments.length > 1) {
+        if (arguments.length > 1) {
           Array.prototype.push.apply(this, arguments);
         } else if( arguments[0] && Array.isArray(arguments[0]) ) {
           Array.prototype.push.apply(this, arguments[0]);
@@ -2735,7 +2757,8 @@ var Backbone = Backbone || {};
     getBackingStoreRatio = Two.Utils.getBackingStoreRatio,
     getPointOnCubicBezier = Two.Utils.getPointOnCubicBezier,
     getCurveLength = Two.Utils.getCurveLength,
-    integrate = Two.Utils.integrate;
+    integrate = Two.Utils.integrate,
+    getReflection = Two.Utils.getReflection;
 
   _.extend(Two.prototype, Backbone.Events, {
 
@@ -2991,7 +3014,7 @@ var Backbone = Backbone || {};
     /**
      * Interpret an SVG Node and add it to this instance's scene. The
      * distinction should be made that this doesn't `import` svg's, it solely
-     * interprets them into something compatible for Two.js — this is slightly
+     * interprets them into something compatible for Two.js — this is slightly
      * different than a direct transcription.
      *
      * @param {Object} svgNode - The node to be parsed
@@ -4077,27 +4100,87 @@ var Backbone = Backbone || {};
         }
 
         ret += command + ' ';
+
       }
+
       return ret;
+
+    },
+
+    getClip: function(shape) {
+
+      clip = shape._renderer.clip;
+
+      if (!clip) {
+
+        root = shape;
+
+        while (root.parent) {
+          root = root.parent;
+        }
+
+        clip = shape._renderer.clip = svg.createElement('clipPath');
+        root.defs.appendChild(clip);
+
+      }
+
+      return clip;
 
     },
 
     group: {
 
       // TODO: Can speed up.
+      // TODO: How does this effect a f
       appendChild: function(id) {
+
         var elem = this.domElement.querySelector('#' + id);
-        if (elem) {
-          this.elem.appendChild(elem);
+
+        if (!elem) {
+          return;
         }
+
+        var tag = elem.nodeName;
+
+        if (!tag) {
+          return;
+        }
+
+        var tagName = tag.replace(/svg\:/ig, '').toLowerCase();
+
+        // Defer additions while clipping
+        if (/clippath/.test(tagName)) {
+          return;
+        }
+
+        this.elem.appendChild(elem);
+
       },
 
       // TODO: Can speed up.
       removeChild: function(id) {
-        var elem = this.elem.querySelector('#' + id);
-        if (elem) {
-          this.elem.removeChild(elem);
+
+        var elem = this.domElement.querySelector('#' + id);
+
+        if (!elem) {
+          return;
         }
+
+        var tag = elem.nodeName;
+
+        if (!tag) {
+          return;
+        }
+
+        var tagName = tag.replace(/svg\:/ig, '').toLowerCase();
+
+        // Defer subtractions while clipping
+        if (/clippath/.test(tagName)) {
+          return;
+        }
+
+        this.elem.removeChild(elem);
+
       },
 
       renderChild: function(child) {
@@ -4107,6 +4190,13 @@ var Backbone = Backbone || {};
       render: function(domElement) {
 
         this._update();
+
+        // Shortcut for hidden objects.
+        // Doesn't reset the flags, so changes are stored and
+        // applied once the object is visible again
+        if (this._opacity === 0 && !this._flagOpacity) {
+          return this;
+        }
 
         if (!this._renderer.elem) {
           this._renderer.elem = svg.createElement('g', {
@@ -4143,6 +4233,37 @@ var Backbone = Backbone || {};
           _.each(this.subtractions, svg.group.removeChild, context);
         }
 
+        /**
+         * Commented two-way functionality of clips / masks with groups and
+         * polygons. Uncomment when this bug is fixed:
+         * https://code.google.com/p/chromium/issues/detail?id=370951
+         */
+
+        // if (this._flagClip) {
+
+        //   clip = svg.getClip(this);
+        //   elem = this._renderer.elem;
+
+        //   if (this._clip) {
+        //     elem.removeAttribute('id');
+        //     clip.setAttribute('id', this.id);
+        //     clip.appendChild(elem);
+        //   } else {
+        //     clip.removeAttribute('id');
+        //     elem.setAttribute('id', this.id);
+        //     this.parent._renderer.elem.appendChild(elem); // TODO: should be insertBefore
+        //   }
+
+        // }
+
+        if (this._flagMask) {
+          if (this._mask) {
+            this._renderer.elem.setAttribute('clip-path', 'url(#' + this._mask.id + ')');
+          } else {
+            this._renderer.elem.removeAttribute('clip-path');
+          }
+        }
+
         return this.flagReset();
 
       }
@@ -4154,6 +4275,13 @@ var Backbone = Backbone || {};
       render: function(domElement) {
 
         this._update();
+
+        // Shortcut for hidden objects.
+        // Doesn't reset the flags, so changes are stored and
+        // applied once the object is visible again
+        if (this._opacity === 0 && !this._flagOpacity) {
+          return this;
+        }
 
         // Collect any attribute that needs to be changed here
         var changed = {};
@@ -4215,6 +4343,37 @@ var Backbone = Backbone || {};
           svg.setAttributes(this._renderer.elem, changed);
         }
 
+        if (this._flagClip) {
+
+          clip = svg.getClip(this);
+          elem = this._renderer.elem;
+
+          if (this._clip) {
+            elem.removeAttribute('id');
+            clip.setAttribute('id', this.id);
+            clip.appendChild(elem);
+          } else {
+            clip.removeAttribute('id');
+            elem.setAttribute('id', this.id);
+            this.parent._renderer.elem.appendChild(elem); // TODO: should be insertBefore
+          }
+
+        }
+
+        /**
+         * Commented two-way functionality of clips / masks with groups and
+         * polygons. Uncomment when this bug is fixed:
+         * https://code.google.com/p/chromium/issues/detail?id=370951
+         */
+
+        // if (this._flagMask) {
+        //   if (this._mask) {
+        //     elem.setAttribute('clip-path', 'url(#' + this._mask.id + ')');
+        //   } else {
+        //     elem.removeAttribute('clip-path');
+        //   }
+        // }
+
         return this.flagReset();
 
       }
@@ -4232,6 +4391,9 @@ var Backbone = Backbone || {};
 
     this.scene = new Two.Group();
     this.scene.parent = this;
+
+    this.defs = svg.createElement('defs');
+    this.domElement.appendChild(this.defs);
 
   };
 
@@ -4282,7 +4444,7 @@ var Backbone = Backbone || {};
     group: {
 
       renderChild: function(child) {
-        canvas[child._renderer.type].render.call(child, this);
+        canvas[child._renderer.type].render.call(child, this.ctx, true, this.clip);
       },
 
       render: function(ctx) {
@@ -4295,14 +4457,38 @@ var Backbone = Backbone || {};
         this._renderer.opacity = this._opacity
           * (parent && parent._renderer ? parent._renderer.opacity : 1);
 
+        var mask = this._mask;
+        // var clip = this._clip;
+
+        if (!this._renderer.context) {
+          this._renderer.context = {};
+        }
+
+        this._renderer.context.ctx = ctx;
+        // this._renderer.context.clip = clip;
+
         ctx.save();
 
         ctx.transform(
           matrix[0], matrix[3], matrix[1], matrix[4], matrix[2], matrix[5]);
 
-        _.each(this.children, canvas.group.renderChild, ctx);
+        if (mask) {
+          canvas[mask._renderer.type].render.call(mask, ctx, true);
+        }
+
+        _.each(this.children, canvas.group.renderChild, this._renderer.context);
 
         ctx.restore();
+
+       /**
+         * Commented two-way functionality of clips / masks with groups and
+         * polygons. Uncomment when this bug is fixed:
+         * https://code.google.com/p/chromium/issues/detail?id=370951
+         */
+
+        // if (clip) {
+        //   ctx.clip();
+        // }
 
         return this.flagReset();
 
@@ -4312,11 +4498,11 @@ var Backbone = Backbone || {};
 
     polygon: {
 
-      render: function(ctx) {
+      render: function(ctx, forced, parentClipped) {
 
         var matrix, stroke, linewidth, fill, opacity, visible, cap, join, miter,
             closed, commands, length, last, next, prev, a, c, d, ux, uy, vx, vy,
-            ar, bl, br, cl, x, y;
+            ar, bl, br, cl, x, y, mask, clip;
 
         // TODO: Add a check here to only invoke _update if need be.
         this._update();
@@ -4335,7 +4521,10 @@ var Backbone = Backbone || {};
         length = commands.length;
         last = length - 1;
 
-        if (!visible || !opacity) {
+        // mask = this._mask;
+        clip = this._clip;
+
+        if (!forced && (!visible || clip)) {
           return this;
         }
 
@@ -4347,6 +4536,16 @@ var Backbone = Backbone || {};
           ctx.transform(
             matrix[0], matrix[3], matrix[1], matrix[4], matrix[2], matrix[5]);
         }
+
+       /**
+         * Commented two-way functionality of clips / masks with groups and
+         * polygons. Uncomment when this bug is fixed:
+         * https://code.google.com/p/chromium/issues/detail?id=370951
+         */
+
+        // if (mask) {
+        //   canvas[mask._renderer.type].render.call(mask, ctx, true);
+        // }
 
         // Styles
 
@@ -4463,10 +4662,16 @@ var Backbone = Backbone || {};
           ctx.closePath();
         }
 
-        ctx.fill();
-        ctx.stroke();
+        if (!clip && !parentClipped) {
+          ctx.fill();
+          ctx.stroke();
+        }
 
         ctx.restore();
+
+        if (clip && !parentClipped) {
+          ctx.clip();
+        }
 
         return this.flagReset();
 
@@ -4604,6 +4809,22 @@ var Backbone = Backbone || {};
 
         }
 
+        if (this._mask) {
+
+          gl.enable(gl.STENCIL_TEST);
+          gl.stencilFunc(gl.ALWAYS, 1, 1);
+
+          gl.colorMask(false, false, false, true);
+          gl.stencilOp(gl.KEEP, gl.KEEP, gl.INCR);
+
+          webgl[this._mask._renderer.type].render.call(this._mask, gl, program, this);
+
+          gl.colorMask(true, true, true, true);
+          gl.stencilFunc(gl.NOTEQUAL, 0, 1);
+          gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
+
+        }
+
         this._flagOpacity = parent._flagOpacity || this._flagOpacity;
 
         this._renderer.opacity = this._opacity
@@ -4614,6 +4835,21 @@ var Backbone = Backbone || {};
           program: program
         });
 
+        if (this._mask) {
+
+          gl.colorMask(false, false, false, false);
+          gl.stencilOp(gl.KEEP, gl.KEEP, gl.DECR);
+
+          webgl[this._mask._renderer.type].render.call(this._mask, gl, program, this);
+
+          gl.colorMask(true, true, true, true);
+          gl.stencilFunc(gl.NOTEQUAL, 0, 1);
+          gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
+
+          gl.disable(gl.STENCIL_TEST);
+
+        }
+
         return this.flagReset();
 
       }
@@ -4622,7 +4858,7 @@ var Backbone = Backbone || {};
 
     polygon: {
 
-      render: function(gl, program) {
+      render: function(gl, program, forcedParent) {
 
         if (!this._visible || !this._opacity) {
           return this;
@@ -4673,6 +4909,14 @@ var Backbone = Backbone || {};
           webgl.updateBuffer(gl, this, program);
           webgl.updateTexture(gl, this);
 
+        }
+
+        // if (this._mask) {
+        //   webgl[this._mask._renderer.type].render.call(mask, gl, program, this);
+        // }
+
+        if (this._clip && !forcedParent) {
+          return;
         }
 
         // Draw Texture
@@ -4899,7 +5143,7 @@ var Backbone = Backbone || {};
             ctx.bezierCurveTo(vx, vy, ux, uy, x, y);
 
             if (i >= last && closed) {
-              // FIXME: d is undefined here?
+
               c = d;
 
               br = (b.controls && b.controls.right) || b;
@@ -4915,7 +5159,7 @@ var Backbone = Backbone || {};
 
               if (c._relative) {
                 ux = toFixed((cl.x + c.x) * scale + cx);
-                uy = toFixed((cl.y + c.y) * scale + cx);
+                uy = toFixed((cl.y + c.y) * scale + cy);
               } else {
                 ux = toFixed(cl.x * scale + cx);
                 uy = toFixed(cl.y * scale + cy);
@@ -5151,8 +5395,10 @@ var Backbone = Backbone || {};
 
     // Setup some initial statements of the gl context
     gl.enable(gl.BLEND);
+
     // https://code.google.com/p/chromium/issues/detail?id=316393
     // gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, gl.TRUE);
+
     gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
     gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA,
       gl.ONE, gl.ONE_MINUS_SRC_ALPHA );
@@ -5274,10 +5520,16 @@ var Backbone = Backbone || {};
 
     _flagMatrix: true,
 
+    // _flagMask: false,
+    // _flagClip: false,
+
     // Underlying Properties
 
     _rotation: 0,
     _scale: 1,
+
+    // _mask: null,
+    // _clip: false,
 
     addTo: function(group) {
       group.add(this);
@@ -5353,8 +5605,7 @@ var Backbone = Backbone || {};
 
     flagReset: function() {
 
-      this._flagMatrix = false;
-      this._flagScale = false;
+      this._flagMatrix = this._flagScale = false;
 
       return this;
 
@@ -5425,7 +5676,7 @@ var Backbone = Backbone || {};
       'visible',
       'cap',
       'join',
-      'miter',  // Order matters here! See LN:388
+      'miter',
 
       'closed',
       'curved',
@@ -5579,6 +5830,16 @@ var Backbone = Backbone || {};
 
       });
 
+      Object.defineProperty(object, 'clip', {
+        get: function() {
+          return this._clip;
+        },
+        set: function(v) {
+          this._clip = v;
+          this._flagClip = true;
+        }
+      });
+
     }
 
   });
@@ -5601,6 +5862,8 @@ var Backbone = Backbone || {};
     _flagJoin: true,
     _flagMiter: true,
 
+    _flagClip: false,
+
     // Underlying Properties
 
     _length: 0,
@@ -5620,6 +5883,8 @@ var Backbone = Backbone || {};
     _automatic: true,
     _beginning: 0,
     _ending: 1.0,
+
+    _clip: false,
 
     clone: function(parent) {
 
@@ -6007,7 +6272,8 @@ var Backbone = Backbone || {};
 
       this._flagVertices =  this._flagFill =  this._flagStroke =
          this._flagLinewidth = this._flagOpacity = this._flagVisible =
-         this._flagCap = this._flagJoin = this._flagMiter = false;
+         this._flagCap = this._flagJoin = this._flagMiter = 
+         this._flagClip = false;
 
       Two.Shape.prototype.flagReset.call(this);
 
@@ -6018,6 +6284,10 @@ var Backbone = Backbone || {};
   });
 
   Polygon.MakeObservable(Polygon.prototype);
+
+  /**
+   * Utility functions
+   */
 
   function getCurveLength(a, b, limit) {
     // TODO: DRYness
@@ -6130,6 +6400,19 @@ var Backbone = Backbone || {};
       Two.Shape.MakeObservable(object);
       Group.MakeGetterSetters(object, properties);
 
+      Object.defineProperty(object, 'mask', {
+        get: function() {
+          return this._mask;
+        },
+        set: function(v) {
+          this._mask = v;
+          this._flagMask = true;
+          if (!v.clip) {
+            v.clip = true;
+          }
+        }
+      });
+
     },
 
     MakeGetterSetters: function(group, properties) {
@@ -6173,6 +6456,8 @@ var Backbone = Backbone || {};
     _flagSubtractions: false,
     _flagOpacity: true,
 
+    _flagMask: false,
+
     // Underlying Properties
 
     _fill: '#fff',
@@ -6191,8 +6476,10 @@ var Backbone = Backbone || {};
     _beginning: 0,
     _ending: 1.0,
 
+    _mask: null,
+
     /**
-     * Group has a gotcha in that it's at the moment required to be bound to
+     * TODO: Group has a gotcha in that it's at the moment required to be bound to
      * an instance of two in order to add elements correctly. This needs to
      * be rethought and fixed.
      */
@@ -6506,7 +6793,7 @@ var Backbone = Backbone || {};
         this._flagSubtractions = false;
       }
 
-      this._flagOpacity = false;
+      this._flagMask = this._flagOpacity = false;
 
       Two.Shape.prototype.flagReset.call(this);
 

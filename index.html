@@ -16,6 +16,8 @@
           autostart: true
         }).appendTo(document.body);
 
+        var centroid = new Two.Vector(two.width / 2, two.height / 2);
+
         var spline = new Two.Spline(two.width, two.height / 2);
         spline.translation.set(two.width / 2, two.height);
 
@@ -31,23 +33,41 @@
 
         });
 
-        two.bind('update', function() {
+        two
+          .bind('resize', function() {
 
-          for (var i = 0, l = circles.length; i < l; i++) {
-            var circle = circles[i];
-            var t = circle.t + circle.step;
-            circle.update(t);
-          }
+            centroid.set(two.width / 2, two.height / 2);
 
-        });
+          })
+          .bind('update', function(frameCount, timeDelta) {
+
+            if (!timeDelta) {
+              return;
+            }
+
+            for (var i = 0, l = circles.length; i < l; i++) {
+              var circle = circles[i];
+              var t = circle.t + timeDelta * circle.step;
+              if (t >= 1) {
+                t = 0;
+                circle.offset.set(
+                  5 * (Math.random() * two.width - two.width / 2),
+                  - 2 * Math.random() * two.height
+                );
+              }
+              circle.update(t);
+            }
+
+          });
 
         function makeCircles(spline) {
 
-          var amt = 100;
+          var amt = 50;
 
           return _.map(_.range(amt), function(i) {
 
-            var r = Math.floor(Math.random() * 100);
+            var pct = i / (amt - 1);
+            var r = 100;//Math.floor(Math.random() * 100);
             var s = Two.Path.makeCircle(r);
 
             s.noStroke();
@@ -57,13 +77,14 @@
               + Math.floor(Math.random() * 255) + ')';
 
             s.spline = spline;
-            s.step = r * 0.000325;
+            s.step = 0.0004;
 
-            s.t = Math.random();
+            s.t = TWEEN.Easing.Sinusoidal.In(Math.random());
 
-            s.origin.set(
+            s.origin = centroid;
+            s.offset.set(
               5 * (Math.random() * two.width - two.width / 2),
-              - Math.random() * two.height
+              - 2 * Math.random() * two.height
             );
 
           return s;
