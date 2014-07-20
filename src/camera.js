@@ -1,13 +1,14 @@
 (function() {
 
   var root = this;
+  var previousCamera = Camera || {};
 
-  var Spline = Two.Spline = function(width, height, order) {
+  var Camera = root.Camera = function(width, height, order) {
 
     this.order = order || 4;
 
-    Two.Polygon.call(this, _.map(_.range(Spline.Resolution), function(i) {
-      var pct = i / (Spline.Resolution - 1);
+    Two.Polygon.call(this, _.map(_.range(Camera.Resolution), function(i) {
+      var pct = i / (Camera.Resolution - 1);
       var adj = this.sigmoid(pct);
       var x = 0;
       var y = - adj * height;
@@ -22,9 +23,23 @@
 
   };
 
-  Spline.Resolution = 16;
+  _.extend(Camera, {
 
-  _.extend(Spline.prototype, Two.Polygon.prototype, {
+    Resolution: 16,
+
+    noConflict: function() {
+      root.Camera = previousCamera;
+      return Camera;
+    }
+
+  });
+
+  _.extend(Camera.prototype, Two.Polygon.prototype, {
+
+    /**
+     * The speed of the camera through space.
+     */
+    velocity: 0,
 
     /**
      * Delineates origin for transformations
@@ -45,7 +60,7 @@
 
     /**
      * Turn a certain amount by [-1, 1] via altering the distribution
-     * of Spline's vertices.
+     * of Camera's vertices.
      */
     turn: function(t) {
 
@@ -70,6 +85,6 @@
 
   });
 
-  Two.Polygon.MakeObservable(Spline.prototype);
+  Two.Polygon.MakeObservable(Camera.prototype);
 
 })();

@@ -1,99 +1,30 @@
 <!doctype html>
 <html>
   <head>
+    <title>~ Let's all go to Carolina ~</title>
   </head>
   <body>
-    <div class="scripts">
+    <div class="scripts" style="display: none;">
+
       <script src="./third-party/tween.js"></script>
       <script src="./third-party/two.js"></script>
-      <script src="./src/spline.js"></script>
-      <script src="./src/path.js"></script>
+      <script src="./third-party/sound.js"></script>
+      <script src="./third-party/noise.js"></script>
+
+      <script src="./src/scene.js"></script>
+      <script src="./src/camera.js"></script>
+      <script src="./src/item.js"></script>
+      <script src="./src/carolina.js"></script>
       <script>
 
-        var two = new Two({
-          type: Two.Types.canvas,
-          fullscreen: true,
-          autostart: true
-        }).appendTo(document.body);
+        Carolina.init(function() {
 
-        var centroid = new Two.Vector(two.width / 2, two.height / 2);
 
-        var spline = new Two.Spline(two.width, two.height / 2);
-        spline.translation.set(two.width / 2, two.height);
-
-        var circles = makeCircles(spline);
-
-        var debug = two.makeGroup(spline);
-        var stage = two.makeGroup(circles);
-
-        window.addEventListener('mousemove', function(e) {
-
-          var amt = 2 * (e.clientX / two.width) - 1;
-          spline.turn(amt / 2);
 
         });
 
-        two
-          .bind('resize', function() {
-
-            centroid.set(two.width / 2, two.height / 2);
-
-          })
-          .bind('update', function(frameCount, timeDelta) {
-
-            if (!timeDelta) {
-              return;
-            }
-
-            for (var i = 0, l = circles.length; i < l; i++) {
-              var circle = circles[i];
-              var t = circle.t + timeDelta * circle.step;
-              if (t >= 1) {
-                t = 0;
-                circle.offset.set(
-                  5 * (Math.random() * two.width - two.width / 2),
-                  - 2 * Math.random() * two.height
-                );
-              }
-              circle.update(t);
-            }
-
-          });
-
-        function makeCircles(spline) {
-
-          var amt = 50;
-
-          return _.map(_.range(amt), function(i) {
-
-            var pct = i / (amt - 1);
-            var r = 100;//Math.floor(Math.random() * 100);
-            var s = Two.Path.makeCircle(r);
-
-            s.noStroke();
-            s.fill = 'rgb('
-              + Math.floor(Math.random() * 255) + ','
-              + Math.floor(Math.random() * 255) + ','
-              + Math.floor(Math.random() * 255) + ')';
-
-            s.spline = spline;
-            s.step = 0.0004;
-
-            s.t = TWEEN.Easing.Sinusoidal.In(Math.random());
-
-            s.origin = centroid;
-            s.offset.set(
-              5 * (Math.random() * two.width - two.width / 2),
-              - 2 * Math.random() * two.height
-            );
-
-          return s;
-
-          });
-
-        }
-
       </script>
+
     </div>
   </body>
 </html>
