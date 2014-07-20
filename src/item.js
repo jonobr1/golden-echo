@@ -56,7 +56,7 @@
 
       return function(r) {
 
-        var shape = new Item(points, true, true);
+        var shape = new Item.Polygon(points, true, true);
         shape.scale = r;
         shape._radius = r;
 
@@ -105,8 +105,8 @@
 
   });
 
-  _.extend(Item.Group.prototype, Item.prototype);
-  _.extend(Item.Polygon.prototype, Item.prototype);
+  _.extend(Item.Group.prototype, Item.prototype, Two.Group.prototype);
+  _.extend(Item.Polygon.prototype, Item.prototype, Two.Polygon.prototype);
 
   Two.Group.MakeObservable(Item.Group.prototype);
   Two.Polygon.MakeObservable(Item.Polygon.prototype);

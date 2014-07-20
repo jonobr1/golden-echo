@@ -6,8 +6,8 @@
     <div class="scripts">
       <script src="./third-party/tween.js"></script>
       <script src="./third-party/two.js"></script>
-      <script src="./src/spline.js"></script>
-      <script src="./src/path.js"></script>
+      <script src="./src/camera.js"></script>
+      <script src="./src/item.js"></script>
       <script>
 
         var two = new Two({
@@ -18,18 +18,18 @@
 
         var centroid = new Two.Vector(two.width / 2, two.height / 2);
 
-        var spline = new Two.Spline(two.width, two.height / 2);
-        spline.translation.set(two.width / 2, two.height);
+        var camera = new Camera(two.width, two.height / 2);
+        camera.translation.set(two.width / 2, two.height);
 
-        var circles = makeCircles(spline);
+        var circles = makeCircles(camera);
 
-        var debug = two.makeGroup(spline);
+        var debug = two.makeGroup(camera);
         var stage = two.makeGroup(circles);
 
         window.addEventListener('mousemove', function(e) {
 
           var amt = 2 * (e.clientX / two.width) - 1;
-          spline.turn(amt / 2);
+          camera.turn(amt / 2);
 
         });
 
@@ -60,7 +60,7 @@
 
           });
 
-        function makeCircles(spline) {
+        function makeCircles(camera) {
 
           var amt = 50;
 
@@ -68,7 +68,7 @@
 
             var pct = i / (amt - 1);
             var r = 100;//Math.floor(Math.random() * 100);
-            var s = Two.Path.makeCircle(r);
+            var s = Item.makeCircle(r);
 
             s.noStroke();
             s.fill = 'rgb('
@@ -76,7 +76,7 @@
               + Math.floor(Math.random() * 255) + ','
               + Math.floor(Math.random() * 255) + ')';
 
-            s.spline = spline;
+            s.camera = camera;
             s.step = 0.0004;
 
             s.t = TWEEN.Easing.Sinusoidal.In(Math.random());
