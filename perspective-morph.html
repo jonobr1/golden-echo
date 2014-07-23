@@ -33,8 +33,10 @@
           var amt = 2 * (e.clientX / two.width) - 1;
           camera.turn(amt / 2);
 
-          circles[0].update(e.clientY / two.height);
-          circles[0].offset.x = amt * 1000;
+          for (var i = 0, l = circles.length; i < l; i++) {
+            circles[i].update(e.clientY / two.height);
+            circles[i].offset.x = amt * 1000;
+          }
 
         });
 
@@ -49,7 +51,7 @@
 
         function makeCircles(camera) {
 
-          var amt = 1;
+          var amt = 2;
 
           return _.map(_.range(amt), function(i) {
 
@@ -68,10 +70,11 @@
 
             s.t = Math.random();
 
-            s.offset.set(0, -50);
-            //   2 * (Math.random() * two.width - two.width / 2),
-            //   - 2 * Math.random() * two.height
-            // );
+            // s.offset.set(0, -50);
+            s.offset.set(
+              2 * (Math.random() * two.width - two.width / 2),
+              - 2 * Math.random() * two.height
+            );
 
           return s;
 

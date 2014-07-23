@@ -3,8 +3,13 @@
   var root = this;
   var previousItem = Item || {};
 
-  var delta = new Two.Vector();
+  var vector = new Two.Vector();
   var origin = new Two.Vector();
+  var offset = {
+    min: new Two.Vector(),
+    max: new Two.Vector(),
+    center: new Two.Vector()
+  };
 
   var Item = root.Item = function(offset) {
 
@@ -46,7 +51,7 @@
      */
     makeCircle: (function() {
 
-      var amt = 6;
+      var amt = 4;
 
       return function(r) {
 
@@ -61,6 +66,7 @@
         var shape = new Item.Polygon(points, true, true);
         // shape.scale = r;
         shape.radius = r;
+        shape.curved = Math.random() > 0.5;
 
         return shape;
 
@@ -98,10 +104,10 @@
       this.scale = this.camera.sigmoid(e, this.camera.order);
 
       this.camera.getPointAt(1 - t, this.translation);
-      delta.copy(this.offset).multiplyScalar(e);
+      vector.copy(this.offset).multiplyScalar(e);
 
-      this.translation.x += this.camera.translation._x + delta.x;
-      this.translation.y += this.camera.translation._y + delta.y;
+      this.translation.x += this.camera.translation._x + vector.x;
+      this.translation.y += this.camera.translation._y + vector.y;
 
       this.t = pct || 0;
 
@@ -118,23 +124,45 @@
 
       Item.prototype.update.call(this, pct);
 
-      delta.copy(this.translation).subSelf(origin).normalize();
+      return this;
 
-      // // Morph verts based on direction.
+      offset.max.set(-Infinity, -Infinity);
+      offset.min.set(Infinity, Infinity);
 
-      // for (var i = 0, l = this.vertices.length; i < l; i++) {
+      // Morph verts based on direction.
 
-      //   var v = this.vertices[i];
-      //   var dist = v.origin.distanceTo(delta);
-      //   var amp = dist / 4;
+      var radius = origin.x * 2;
 
-      //   var x = delta.x * amp;
-      //   var y = delta.y * amp;
+      for (var i = 0, l = this.vertices.length; i < l; i++) {
 
-      //   v.x = v.origin.x - x;
-      //   v.y = v.origin.y - y;
+        var v = this.vertices[i];
+        var dist = vector
+          .copy(origin)
+          .subSelf(this.translation)
+          .distanceTo(v);
 
-      // }
+        var amt = Math.max(Math.min(dist / radius, 1), 0);
+
+        vector.multiplyScalar(amt).multiplyScalar(this._t);
+
+        v.x = v.origin.x - vector.x;
+        v.y = v.origin.y - vector.y;
+
+        offset.max.x = Math.max(v.x, offset.max.x);
+        offset.min.x = Math.min(v.x, offset.min.x);
+        offset.min.y = Math.min(v.y, offset.min.y);
+        offset.max.y = Math.max(v.y, offset.max.y);
+
+      }
+
+      offset.center.set(
+        (offset.max.x - offset.min.x) / 2 + offset.min.x,
+        (offset.max.y - offset.min.y) / 2 + offset.min.y
+      );
+
+      this.translation.subSelf(offset.center);
+
+      return this;
 
     }
 

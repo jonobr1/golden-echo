@@ -16,6 +16,8 @@
           autostart: true
         }).appendTo(document.body);
 
+        Item.origin.threshold = two.width / 2;
+
         var centroid = new Two.Vector(two.width / 2, two.height / 2);
 
         var camera = new Camera(two.width, two.height / 2);
@@ -52,8 +54,10 @@
               if (t >= 1) {
                 t = 0;
                 circle.offset.set(
-                  5 * (Math.random() * two.width - two.width / 2),
-                  - 2 * Math.random() * two.height
+                  Math.random() > 0.5 ? 
+                  - Math.random() * Item.origin.threshold - Item.origin.threshold / 2 :
+                  Math.random() * Item.origin.threshold + Item.origin.threshold / 2,
+                  - Math.random() * two.height
                 );
               }
               circle.update(t);
@@ -69,7 +73,7 @@
           return _.map(_.range(amt), function(i) {
 
             var pct = i / (amt - 1);
-            var r = 100;//Math.floor(Math.random() * 100);
+            var r = Math.floor(Math.random() * 25) + 25;
             var s = Item.makeCircle(r);
 
             s.noStroke();
@@ -84,8 +88,10 @@
             s.t = TWEEN.Easing.Sinusoidal.In(Math.random());
 
             s.offset.set(
-              5 * (Math.random() * two.width - two.width / 2),
-              - 2 * Math.random() * two.height
+              Math.random() > 0.5 ? 
+              - Math.random() * Item.origin.threshold - Item.origin.threshold / 2 :
+              Math.random() * Item.origin.threshold + Item.origin.threshold / 2,
+              - Math.random() * two.height
             );
 
           return s;
