@@ -26,10 +26,15 @@
         var debug = two.makeGroup(camera);
         var stage = two.makeGroup(circles);
 
+        var t = 0;
+
         window.addEventListener('mousemove', function(e) {
 
           var amt = 2 * (e.clientX / two.width) - 1;
           camera.turn(amt / 2);
+
+          circles[0].update(e.clientY / two.height);
+          circles[0].offset.x = amt * 1000;
 
         });
 
@@ -40,31 +45,11 @@
             Item.origin.set(two.width / 2, two.height / 2);
 
           })
-          .bind('update', function(frameCount, timeDelta) {
-
-            if (!timeDelta || timeDelta > 1000) {
-              return;
-            }
-
-            for (var i = 0, l = circles.length; i < l; i++) {
-              var circle = circles[i];
-              var t = circle.t + timeDelta * circle.step;
-              if (t >= 1) {
-                t = 0;
-                circle.offset.set(
-                  5 * (Math.random() * two.width - two.width / 2),
-                  - 2 * Math.random() * two.height
-                );
-              }
-              circle.update(t);
-            }
-
-          })
           .trigger('resize');
 
         function makeCircles(camera) {
 
-          var amt = 50;
+          var amt = 1;
 
           return _.map(_.range(amt), function(i) {
 
@@ -81,12 +66,12 @@
             s.camera = camera;
             s.step = 0.0004;
 
-            s.t = TWEEN.Easing.Sinusoidal.In(Math.random());
+            s.t = Math.random();
 
-            s.offset.set(
-              5 * (Math.random() * two.width - two.width / 2),
-              - 2 * Math.random() * two.height
-            );
+            s.offset.set(0, -50);
+            //   2 * (Math.random() * two.width - two.width / 2),
+            //   - 2 * Math.random() * two.height
+            // );
 
           return s;
 

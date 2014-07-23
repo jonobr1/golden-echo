@@ -3,11 +3,11 @@
   var root = this;
   var previousItem = Item || {};
 
-  var vector = new Two.Vector();
+  var delta = new Two.Vector();
+  var origin = new Two.Vector();
 
-  var Item = root.Item = function(origin, offset) {
+  var Item = root.Item = function(offset) {
 
-    this.origin = origin || new Two.Vector();
     this.offset = offset || new Two.Vector();
     this.visible = false;
 
@@ -34,6 +34,8 @@
 
     },
 
+    origin: origin,
+
     noConflict: function() {
       root.Item = previousItem;
       return Item;
@@ -46,19 +48,19 @@
 
       var amt = 6;
 
-      var points = _.map(_.range(amt), function(i) {
-        var pct = i / amt;
-        var theta = pct * Math.PI * 2;
-        var x = Math.cos(theta);
-        var y = Math.sin(theta);
-        return new Two.Anchor(x, y);
-      });
-
       return function(r) {
 
+        var points = _.map(_.range(amt), function(i) {
+          var pct = i / amt;
+          var theta = pct * Math.PI * 2;
+          var x = r * Math.cos(theta);
+          var y = r * Math.sin(theta);
+          return new Two.Anchor(x, y);
+        });
+
         var shape = new Item.Polygon(points, true, true);
-        shape.scale = r;
-        shape._radius = r;
+        // shape.scale = r;
+        shape.radius = r;
 
         return shape;
 
@@ -70,7 +72,9 @@
 
   _.extend(Item.prototype, Two.Polygon.prototype, {
 
-    _radius: 1,
+    radius: 1,
+
+    _t: 0,
 
     t: 0,
 
@@ -83,19 +87,21 @@
         return this;
       }
 
-      var t = TWEEN.Easing.Exponential.In((pct * pct * pct) || 0);
+      var t = this._t = TWEEN.Easing.Exponential.In((pct * pct * pct) || 0);
 
       if (!this.visible) {
         this.visible = true;
       }
 
-      this.scale = this._radius * this.camera.sigmoid(t, this.camera.order);
+      var e = t;
+
+      this.scale = this.camera.sigmoid(e, this.camera.order);
 
       this.camera.getPointAt(1 - t, this.translation);
-      vector.copy(this.offset).multiplyScalar(t);
+      delta.copy(this.offset).multiplyScalar(e);
 
-      this.translation.x += this.camera.translation._x + vector.x;
-      this.translation.y += this.camera.translation._y + vector.y;
+      this.translation.x += this.camera.translation._x + delta.x;
+      this.translation.y += this.camera.translation._y + delta.y;
 
       this.t = pct || 0;
 
@@ -106,7 +112,33 @@
   });
 
   _.extend(Item.Group.prototype, Item.prototype, Two.Group.prototype);
-  _.extend(Item.Polygon.prototype, Item.prototype, Two.Polygon.prototype);
+  _.extend(Item.Polygon.prototype, Item.prototype, Two.Polygon.prototype, {
+
+    update: function(pct) {
+
+      Item.prototype.update.call(this, pct);
+
+      delta.copy(this.translation).subSelf(origin).normalize();
+
+      // // Morph verts based on direction.
+
+      // for (var i = 0, l = this.vertices.length; i < l; i++) {
+
+      //   var v = this.vertices[i];
+      //   var dist = v.origin.distanceTo(delta);
+      //   var amp = dist / 4;
+
+      //   var x = delta.x * amp;
+      //   var y = delta.y * amp;
+
+      //   v.x = v.origin.x - x;
+      //   v.y = v.origin.y - y;
+
+      // }
+
+    }
+
+  });
 
   Two.Group.MakeObservable(Item.Group.prototype);
   Two.Polygon.MakeObservable(Item.Polygon.prototype);
