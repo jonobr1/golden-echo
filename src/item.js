@@ -104,7 +104,7 @@
       this.scale = this.camera.sigmoid(e, this.camera.order);
 
       this.camera.getPointAt(1 - t, this.translation);
-      vector.copy(this.offset).multiplyScalar(e);
+      vector.copy(this.offset).multiplyScalar(t);
 
       this.translation.x += this.camera.translation._x + vector.x;
       this.translation.y += this.camera.translation._y + vector.y;

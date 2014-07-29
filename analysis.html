@@ -1,0 +1,229 @@
+<!doctype html>
+<html>
+  <head></head>
+  <body>
+    <div class="scripts">
+      <script src="./third-party/two.js"></script>
+      <script src="./third-party/sound.js"></script>
+      <script src="./third-party/analyser.js"></script>
+      <script>
+
+        var two = new Two({
+          type: Two.Types.canvas,
+          fullscreen: true,
+          autostart: true
+        }).appendTo(document.body);
+
+        var triggers = [];
+
+        Analyser.ready(function() {
+
+          var path = './audio/stems/';
+          var filename = '+i Carolina - RC Mix 4 Bass Stem.wav';
+
+          // var path = './audio/';
+          // var filename = 'carolina.mp3';
+
+          var audio = window.audio = new Analyser(path + filename, function() {
+
+            /**
+             * Start analysis
+             */
+            audio.play();
+            audio.source.onended = function() {
+
+              console.log(JSON.stringify(triggers));
+              alert('Finished! Check the console.');
+
+            };
+
+            // Set the resolution.
+
+            var frequencyBinCount = 16;
+            var frequencyData = new Uint8Array(audio.analyser.frequencyBinCount);
+
+            var bands = _.map(_.range(frequencyBinCount), function(i) {
+
+              var pct = (i + 0.5) / (frequencyBinCount + 1);
+              var x = pct * two.width;
+              var y = two.height / 2;
+              var w = two.width / (frequencyBinCount + 10);
+              var h = two.height;
+
+              var rect = new Two.Polygon([
+                new Two.Anchor(0 - w / 2, 0 - h / 2),
+                new Two.Anchor(0 + w / 2, 0 - h / 2),
+                new Two.Anchor(0 + w / 2, 0 + h / 2),
+                new Two.Anchor(0 - w / 2, 0 + h / 2)
+              ], true);
+
+              rect.translation.set(x, y);
+
+              rect.cap = rect.join = 'round';
+              rect.linewidth = 10;
+              rect.stroke = rect.fill = 'orange';
+
+              rect._matrix.manual = true;
+              rect._matrix.identity()
+                .translate(rect.translation.x, rect.translation.y);
+
+              two.scene.add(rect);
+
+              return rect;
+
+            });
+
+            var x = two.width * (frequencyBinCount + 0.5) / (frequencyBinCount + 1);
+            var y = two.height / 2;
+            var w = two.width / (frequencyBinCount + 10);
+            var h = two.height;
+
+            var solo = new Two.Polygon([
+              new Two.Anchor(0 - w / 2, 0 - h / 2),
+              new Two.Anchor(0 + w / 2, 0 - h / 2),
+              new Two.Anchor(0 + w / 2, 0 + h / 2),
+              new Two.Anchor(0 - w / 2, 0 + h / 2)
+            ], true);
+
+            solo.translation.set(x, y);
+
+            solo.cap = solo.join = 'round';
+            solo.linewidth = 10;
+            solo.stroke = solo.fill = 'magenta';
+
+            solo._matrix.manual = true;
+            solo._matrix.identity()
+              .translate(solo.translation.x, solo.translation.y);
+
+            two.scene.add(solo);
+
+            var progress = new Two.Polygon([
+              new Two.Anchor(), 
+              new Two.Anchor()
+            ]);
+
+            progress.noFill();
+            progress.stroke = 'rgb(255, 100, 100)';
+            progress.linewidth = 20;
+
+            two.scene.add(progress);
+
+            var bounce = two.makeCircle(50, 50, 20);
+            bounce.fill = 'rgb(0, 200, 255)';
+            bounce.noStroke();
+
+            bounce.scale = 0;
+
+            var zeroline = two.makeLine(0, two.height / 2, two.width, two.height / 2);
+
+            var threshold = two.makeLine(0, two.height / 2, two.width, two.height / 2);
+            threshold.noFill();
+            threshold.stroke = 'rgba(255, 100, 100, 0.3)';
+            threshold.linewidth = 5;
+
+            threshold.value = localStorage['threshold-value'] || 0;
+
+            threshold.translation.y = two.height / 2 - threshold.value * two.height / 2;
+
+            var drag = function(e) {
+              threshold.translation.y = e.clientY;
+              threshold.value = Math.abs(two.height / 2 - e.clientY) / (two.height / 2);
+              localStorage['threshold-value'] = threshold.value;
+            };
+
+            var endDrag = function(e) {
+              window.removeEventListener('mousemove', drag, false);
+              window.removeEventListener('mouseup', endDrag, false);
+            };
+
+            window.addEventListener('mousedown', function(e) {
+              window.addEventListener('mousemove', drag, false);
+              window.addEventListener('mouseup', endDrag, false);
+            }, false);
+
+            var data, startTime, debounceTime = 50;  // In millis
+            // var serializeData = _.debounce(function() {
+            var serializeData = function() {
+              data.duration = (now() - data.startTime);// - debounceTime;
+              // console.log('duration', data.duration);
+              // console.log('');
+              triggers.push(data);
+              data = undefined;
+              logging = false;
+            // }, debounceTime);
+            };
+
+            two.bind('update', function() {
+
+              audio.analyser.getByteFrequencyData(frequencyData);
+
+              var avg = 0, cumulativeBins = 1;
+
+              for (var i = 0, l = frequencyBinCount; i < l; i++) {
+
+                var b = bands[i];
+                var amp = frequencyData[Math.floor(audio.analyser.frequencyBinCount * i / l)] / 255;
+
+                b._matrix
+                  .identity()
+                  .translate(b.translation.x, b.translation.y)
+                  .scale(1, amp);
+
+                if (amp > 0) {
+                  avg += amp;
+                  cumulativeBins++;
+                }
+
+              }
+
+              avg /= cumulativeBins;
+
+              solo._matrix
+                .identity()
+                .translate(solo.translation.x, solo.translation.y)
+                .scale(1, avg);
+
+              /**
+               * If avg > 0 then "trigger" and clock duration
+               */
+
+              var t = now();
+
+
+
+              if (avg > threshold.value) {
+
+                // Initialize
+                if (!data) {
+                  data = {
+                    startTime: t
+                  };
+                  bounce.scale = 1;
+                  // console.log('start', data.startTime);
+                }
+
+              } else if (data) {
+
+                serializeData();
+
+              }
+
+              bounce.scale += - bounce.scale * 0.125;
+              progress.vertices[1].x = two.width * (t / 1000) / audio.buffer.duration;
+
+            });
+
+            function now() {
+
+              return Math.floor((Sound.ctx.currentTime - audio.startTime) * 1000);
+
+            }
+
+          });
+
+        });
+
+      </script>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,146 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, user-scalable=no">
+    <style>
+      * { margin: 0; padding: 0; }
+    </style>
+  </head>
+  <body style="position: absolute; width: 100%; height: 100%; overflow: hidden; top: 0; left: 0;">
+    <div class="scripts">
+      <script src="./third-party/two.js"></script>
+      <script src="./third-party/three.js"></script>
+      <script>
+
+        var renderer = new THREE.WebGLRenderer({ antialias: false });
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
+        camera.velocity = 1;
+        camera.cone = (function() {
+
+          var mesh = new THREE.Mesh(new THREE.CylinderGeometry(0, 1, 4), new THREE.MeshBasicMaterial({
+            color: 0xff7777
+          }));
+
+          mesh.rotation.x = - Math.PI / 2;
+
+          var group = new THREE.Object3D();
+          group.add(mesh);
+
+          return group;
+
+        })();
+        camera.cone.position.set(0, - 10, - 20);
+        camera.add(camera.cone);
+        scene.add(camera);
+
+        var amt = 1000;
+        var spline = new THREE.Spline(_.map(_.range(amt), function(i) {
+          var pct = i / (amt - 1);
+          var depth = camera.far;
+          var z = (1 - pct) * depth;
+          // return new THREE.Vector3(50 * Math.sin(pct * Math.PI * 8) * (1 - pct), 0, z);
+          return new THREE.Vector3(0, 0, z);
+        }));
+
+        spline.mesh = new THREE.Line(new THREE.Geometry(), new THREE.LineBasicMaterial({
+          color: 0xffff00
+        }));
+        spline.mesh.geometry.vertices = _.map(_.range(amt), function(i) {
+          return new THREE.Vector3().copy(spline.getPoint(i / (amt - 1)));
+        });
+        spline.mesh.geometry.verticesNeedUpdate = true;
+        spline.mesh.position.y -= 10;
+        scene.add(spline.mesh);
+
+        var cloud = new THREE.PointCloud(new THREE.Geometry(), new THREE.PointCloudMaterial({
+          color: 0xffffff,
+          size: 20,
+          sizeAttenuation: true
+        }));
+
+        cloud.geometry.vertices = _.map(_.range(500), function() {
+          return new THREE.Vector3(Math.random() * camera.far - camera.far / 2, Math.random() * camera.far, Math.random() * camera.far * 2);
+        });
+        cloud.geometry.verticesNeedUpdate = true;
+        scene.add(cloud);
+
+        document.body.appendChild(renderer.domElement);
+        window.addEventListener('resize', resize, false);
+        window.addEventListener('mousemove', mousemove, false);
+
+        var vector = new THREE.Vector3(), k = 0;
+
+        function loop() {
+
+          requestAnimationFrame(loop);
+
+          var step = camera.velocity / camera.far;
+          k += step;
+
+          vector.copy(spline.getPoint(1 - k));
+
+          camera.lookAt(vector);
+          camera.position.copy(vector);
+
+          var index = Math.floor(k * spline.points.length);
+
+          if (index > 0) {
+
+            var i, l;
+            var points = spline.points.splice(spline.points.length - (index + 1), index + 1);
+
+            vector.set(0, 0, camera.velocity).applyEuler(camera.cone.rotation);
+
+            for (i = l = points.length - 1; i >= 0; i--) {
+              var p = points[i];
+              if (i >= l) {
+                p.copy(spline.points[0]);
+              } else {
+                p.copy(points[i + 1]);
+              }
+              p.add(vector);
+            }
+
+            spline.points = points.concat(spline.points);
+
+            for (i = 0, l = spline.mesh.geometry.vertices.length; i < l; i++) {
+              spline.mesh.geometry.vertices[i].copy(spline.getPoint(i / (l - 1)));
+            }
+            spline.mesh.geometry.verticesNeedUpdate = true;
+
+            k = 0;
+
+          }
+
+          renderer.render(scene, camera);
+
+        }
+
+        function mousemove(e) {
+
+          var pct = e.clientX / window.innerWidth;
+          camera.cone.rotation.y = (1 - pct) * Math.PI / 4 - Math.PI / 8;
+
+          // pct = e.clientY / window.innerHeight;
+          // camera.cone.rotation.x = (1 - pct) * Math.PI / 4 - Math.PI / 8;
+
+        }
+
+        function resize() {
+
+          // renderer.devicePixelRatio = 1;
+          renderer.setSize(window.innerWidth, window.innerHeight);
+
+          camera.aspect = window.innerWidth / window.innerHeight;
+          camera.updateProjectionMatrix();
+
+        }
+
+        resize();
+        loop();
+
+      </script>
+    </div>
+  </body>
+</html>
