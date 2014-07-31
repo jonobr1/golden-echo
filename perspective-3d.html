@@ -31,14 +31,16 @@
 
         })();
         camera.cone.position.set(0, - 10, - 20);
+
         camera.add(camera.cone);
         scene.add(camera);
 
-        var amt = 1000;
+        var amt = 500;
         var spline = new THREE.Spline(_.map(_.range(amt), function(i) {
           var pct = i / (amt - 1);
           var depth = camera.far;
-          var z = (1 - pct) * depth;
+          // var z = (1 - pct) * depth;
+          var z = (amt - i - 1) * camera.velocity;
           // return new THREE.Vector3(50 * Math.sin(pct * Math.PI * 8) * (1 - pct), 0, z);
           return new THREE.Vector3(0, 0, z);
         }));
@@ -46,6 +48,12 @@
         spline.mesh = new THREE.Line(new THREE.Geometry(), new THREE.LineBasicMaterial({
           color: 0xffff00
         }));
+        // spline.mesh = new THREE.PointCloud(new THREE.Geometry(), new THREE.PointCloudMaterial({
+        //   color: 0xffff00,
+        //   size: 5,
+        //   sizeAttenuation: true
+        // }));
+        amt = 10;
         spline.mesh.geometry.vertices = _.map(_.range(amt), function(i) {
           return new THREE.Vector3().copy(spline.getPoint(i / (amt - 1)));
         });
@@ -59,8 +67,8 @@
           sizeAttenuation: true
         }));
 
-        cloud.geometry.vertices = _.map(_.range(500), function() {
-          return new THREE.Vector3(Math.random() * camera.far - camera.far / 2, Math.random() * camera.far, Math.random() * camera.far * 2);
+        cloud.geometry.vertices = _.map(_.range(10000), function() {
+          return new THREE.Vector3(Math.random() * camera.far * 2 - camera.far, Math.random() * camera.far, Math.random() * camera.far * 4);
         });
         cloud.geometry.verticesNeedUpdate = true;
         scene.add(cloud);
