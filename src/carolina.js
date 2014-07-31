@@ -7,7 +7,7 @@
   var root = this;
   var previousCarolina = root.Carolina || {};
 
-  var callbacks = [], two;
+  var callbacks = [], lastFrame;
 
   var Carolina = root.Carolina = {
 
@@ -51,41 +51,36 @@
      */
     init: function(callback) {
 
-      two = new Two({
-        fullscreen: true
-      }).appendTo(document.body);
+      // Create the renderer and other initial objects
+      Carolina.renderer = new THREE.WebGLRenderer({ antialias: false });
+      Carolina.scene = new THREE.Scene();
+      Carolina.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
+      Carolina.path = new Path(Carolina.camera);
 
-      Carolina.camera = new Camera(two.width, two.height);
-      Carolina.camera.translation.set(two.width / 2, two.height);
+      Carolina.camera.cone = (function() {
 
-      two
-        .bind('resize', function() {
+        var mesh = new THREE.Mesh(new THREE.CylinderGeometry(0, 1, 4), new THREE.MeshBasicMaterial({
+          color: 0xff7777
+        }));
 
-          Carolina.camera.resize(two.width, two.height);
-          Carolina.camera.translation.set(two.width / 2, two.height);
+        mesh.rotation.x = - Math.PI / 2;
 
-        })
-        .bind('update', function(frameCount, timeDelta) {
+        var group = new THREE.Object3D();
+        group.add(mesh);
 
-          if (Carolina.playing && timeDelta) {
-            Carolina.currentTime += timeDelta / 1000;
-          }
+        return group;
 
-          TWEEN.update(Carolina.currentTime * 1000);
+      })();
 
-          for (var i = 0, l = Carolina.scenes.length; i < l; i++) {
+      Carolina.camera.cone.position.set(0, - 10, - 20);
 
-            var scene = Carolina.scenes[i];
+      Carolina.scene.add(Carolina.camera);
+      Carolina.camera.add(Carolina.camera.cone);
 
-            if (!scene.enabled) {
-              continue;
-            }
+      window.addEventListener('resize', Carolina.resize, false);
+      Carolina.resize();
 
-            scene.update();
-
-          }
-
-        });
+      document.body.appendChild(Carolina.renderer.domElement);
 
       Carolina.ready(callback);
 
@@ -101,10 +96,10 @@
         return Carolina;
       }
 
-      two.play();
-
       Carolina.playing = true;
       Carolina.audio.play();
+
+      Carolina.loop();
 
       return Carolina;
 
@@ -117,8 +112,6 @@
       }
 
       Carolina.playing = false;
-
-      two.pause();
       Carolina.audio.pause();
 
       return Carolina;
@@ -130,8 +123,57 @@
       Carolina.currentTime = 0;
       Carolina.playing = false;
 
-      two.pause();
       Carolina.audio.stop();
+
+      return Carolina;
+
+    },
+
+    loop: function() {
+
+      var timeDelta, now = TWEEN.clock.now();
+
+      if (!!lastFrame) {
+        timeDelta = parseFloat((now - lastFrame).toFixed(3));
+      }
+      lastFrame = now;
+
+      if (Carolina.playing) {
+        requestAnimationFrame(Carolina.loop);
+      }
+
+      if (Carolina.playing && timeDelta) {
+        Carolina.currentTime += timeDelta / 1000;
+      }
+
+      TWEEN.update(Carolina.currentTime * 1000);
+
+      for (var i = 0, l = Carolina.scenes.length; i < l; i++) {
+
+        var scene = Carolina.scenes[i];
+
+        if (!scene.enabled) {
+          continue;
+        }
+
+        scene.update();
+
+      }
+
+      Carolina.renderer.render(Carolina.scene, Carolina.camera);
+
+      return Carolina;
+
+    },
+
+    resize: function() {
+
+      var width = window.innerWidth;
+      var height = window.innerHeight;
+
+      Carolina.renderer.setSize(width, height);
+      Carolina.camera.aspect = width / height;
+      Carolina.camera.updateProjectionMatrix();
 
       return Carolina;
 
@@ -150,7 +192,7 @@
 
     intro: (function() {
 
-      var group = new Scene();
+      var group = {};
 
       return group;
 
@@ -158,7 +200,7 @@
 
     outro: (function() {
 
-      var group = new Scene();
+      var group = {};
 
       return group;
 
@@ -167,21 +209,21 @@
     verses: [
       (function() {
 
-        var group = new Scene();
+        var group = {};
 
         return group;
 
       })(),
       (function() {
 
-        var group = new Scene();
+        var group = {};
 
         return group;
 
       })(),
       (function() {
 
-        var group = new Scene();
+        var group = {};
 
         return group;
 
@@ -190,7 +232,7 @@
 
     chorus: (function() {
 
-      var group = new Scene();
+      var group = {};
 
       return group;
 
@@ -198,7 +240,7 @@
 
     transition: (function() {
 
-      var group = new Scene();
+      var group = {};
 
       return group;
 
