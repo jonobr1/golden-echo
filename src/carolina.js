@@ -54,12 +54,12 @@
       // Create the renderer and other initial objects
       Carolina.renderer = new THREE.WebGLRenderer({ antialias: false });
       Carolina.scene = new THREE.Scene();
-      Carolina.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
-      Carolina.path = new Path(Carolina.camera);
 
+      Carolina.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
+      Carolina.camera.velocity = 5;
       Carolina.camera.cone = (function() {
 
-        var mesh = new THREE.Mesh(new THREE.CylinderGeometry(0, 1, 4), new THREE.MeshBasicMaterial({
+        var mesh = new THREE.Mesh(new THREE.CylinderGeometry(0, 1, 4, 32), new THREE.MeshBasicMaterial({
           color: 0xff7777
         }));
 
@@ -71,11 +71,37 @@
         return group;
 
       })();
-
       Carolina.camera.cone.position.set(0, - 10, - 20);
+
+      Carolina.path = new Path(Carolina.camera);
 
       Carolina.scene.add(Carolina.camera);
       Carolina.camera.add(Carolina.camera.cone);
+
+      var pointCloud = (function() {
+
+        var amt = 5000;
+
+        var mesh = new THREE.PointCloud(new THREE.Geometry(), new THREE.PointCloudMaterial({
+          color: 0xffffff,
+          size: 3,
+          sizeAttenuation: true
+        }));
+
+        for (var i = 0; i < amt; i++) {
+          var x = Math.random() * Carolina.camera.far * 2 - Carolina.camera.far;
+          var y = Math.random() * Carolina.camera.far;
+          var z = Math.random() * Carolina.camera.far * 10;
+          mesh.geometry.vertices.push(new THREE.Vector3(x, y, z));
+        }
+
+        mesh.geometry.verticesNeedUpdate = true;
+
+        return mesh;
+
+      })();
+
+      Carolina.scene.add(pointCloud);
 
       window.addEventListener('resize', Carolina.resize, false);
       Carolina.resize();
@@ -95,6 +121,8 @@
       if (Carolina.playing) {
         return Carolina;
       }
+
+      lastFrame = TWEEN.clock.now();
 
       Carolina.playing = true;
       Carolina.audio.play();
@@ -148,17 +176,19 @@
 
       TWEEN.update(Carolina.currentTime * 1000);
 
-      for (var i = 0, l = Carolina.scenes.length; i < l; i++) {
+      Carolina.path.update();
 
-        var scene = Carolina.scenes[i];
+      // for (var i = 0, l = Carolina.scenes.length; i < l; i++) {
 
-        if (!scene.enabled) {
-          continue;
-        }
+      //   var scene = Carolina.scenes[i];
 
-        scene.update();
+      //   if (!scene.enabled) {
+      //     continue;
+      //   }
 
-      }
+      //   scene.update();
+
+      // }
 
       Carolina.renderer.render(Carolina.scene, Carolina.camera);
 
