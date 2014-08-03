@@ -48,7 +48,7 @@
 
     this.visible = true;
 
-    this.tween.to({}, this.duration).start();
+    this.tween.to({}, this.duration).start(TWEEN.currentTime);
 
     return this;
 

@@ -73,7 +73,9 @@
 
     drag: 0.125,
 
-    radialBreadth: Math.PI / 8,
+    radialBreadth: Math.PI / 4,
+
+    radialResolution: 24,
 
     ground: new THREE.Vector3(0, - 10, 0),
 
@@ -86,7 +88,7 @@
       Carolina.renderer = new THREE.WebGLRenderer({ antialias: false });
       Carolina.scene = new THREE.Scene();
 
-      Carolina.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
+      Carolina.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
       Carolina.camera.velocity = 5;
       Carolina.camera.cone = (function() {
 
@@ -229,14 +231,16 @@
 
       TWEEN.update(currentMillis);
 
-      Carolina.camera.influence._x += Carolina.camera.cone.rotation._x / 8;
-      Carolina.camera.influence._y += Carolina.camera.cone.rotation._y / 8;
-      Carolina.camera.influence._z += Carolina.camera.cone.rotation._z / 8;
+      Carolina.camera.influence._x += Carolina.camera.cone.rotation._x / Carolina.radialResolution;
+      Carolina.camera.influence._y += Carolina.camera.cone.rotation._y / Carolina.radialResolution;
+      Carolina.camera.influence._z += Carolina.camera.cone.rotation._z / Carolina.radialResolution;
 
       Carolina.path.update();
 
       nullObject.position.copy(Carolina.path.points[1]);
       nullObject.lookAt(Carolina.path.points[0]);
+
+      var minDuration = Math.floor(timeDelta * (Carolina.camera.far / Carolina.camera.velocity));
 
       for (var k in Carolina.triggers) {
 
@@ -250,7 +254,7 @@
 
         if (t.startTime <= currentMillis) {
           var o = Carolina.objects[k].active;
-          o.duration = Math.max(t.duration, 2500);
+          o.duration = Math.max(t.duration, minDuration);
           o.start(Carolina.path.points[0], nullObject.rotation);
           list.index++;
         }

@@ -28,6 +28,8 @@ var TWEEN = TWEEN || ( function () {
 
     REVISION: '14-br1',
 
+    currentTime: 0,
+
     getAll: function () {
 
       return _tweens;
@@ -75,6 +77,8 @@ var TWEEN = TWEEN || ( function () {
         tweens[ i ].update( time );
 
       }
+
+      this.currentTime = time;
 
       return true;
 
