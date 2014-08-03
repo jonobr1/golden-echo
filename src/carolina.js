@@ -7,22 +7,47 @@
   var root = this;
   var previousCarolina = root.Carolina || {};
 
-  var callbacks = [], lastFrame;
+  var callbacks = [], lastFrame, nullObject = new THREE.Object3D();
+
+  var onload = _.after(2, function() {
+
+    Carolina._ready = true;
+    _.each(callbacks, function(c) {
+      c();
+    });
+    callbacks.length = 0;
+
+  });
 
   var Carolina = root.Carolina = {
+
+    triggers: (function() {
+
+      var triggers = {};
+      var types = [
+        'snare'
+      ];
+      var ready = _.after(types.length, onload);
+
+      _.each(types, function(type) {
+
+        xhr.getJSON('./data/' + type + '.json', function(data) {
+          triggers[type] = data;
+          data.index = 0;
+          Carolina.register(type, Math.max(Math.floor(data.length / 10), 1));
+          ready();
+        });
+
+      });
+
+      return triggers;
+
+    })(),
 
     /**
      * The song data to be played in the Web Audio API
      */
-    audio: new Sound('audio/carolina.mp3', function() {
-
-      Carolina._ready = true;
-      _.each(callbacks, function(c) {
-        c();
-      });
-      callbacks.length = 0;
-
-    }),
+    audio: new Sound('audio/carolina.mp3', onload),
 
     noConflict: function() {
       root.Carolina = previousCarolina;
@@ -45,6 +70,12 @@
     },
 
     currentTime: 0,
+
+    drag: 0.125,
+
+    radialBreadth: Math.PI / 8,
+
+    ground: new THREE.Vector3(0, - 10, 0),
 
     /**
      * Setup drawing context.
@@ -71,7 +102,8 @@
         return group;
 
       })();
-      Carolina.camera.cone.position.set(0, - 10, - 20);
+      Carolina.camera.influence = new THREE.Euler().copy(Carolina.camera.cone.rotation);
+      Carolina.camera.cone.position.set(0, Carolina.ground.y, - 20);
 
       Carolina.path = new Path(Carolina.camera);
 
@@ -103,6 +135,25 @@
 
       Carolina.scene.add(pointCloud);
 
+      var drag = function(e) {
+
+        var pct = e.clientX / window.innerWidth;
+        var dest = (1 - pct) * Carolina.radialBreadth - Carolina.radialBreadth / 2;
+        Carolina.camera.cone.rotation.y += (dest - Carolina.camera.cone.rotation.y) * Carolina.drag;
+
+      };
+
+      window.addEventListener('touchmove', function(e) {
+
+        var touch = e.changedTouches[0];
+
+        drag({
+          clientX: touch.pageX,
+          clientY: touch.pageY
+        });
+
+      }, false);
+      window.addEventListener('mousemove', drag, false);
       window.addEventListener('resize', Carolina.resize, false);
       Carolina.resize();
 
@@ -174,21 +225,37 @@
         Carolina.currentTime += timeDelta / 1000;
       }
 
-      TWEEN.update(Carolina.currentTime * 1000);
+      var currentMillis = Carolina.currentTime * 1000;
+
+      TWEEN.update(currentMillis);
+
+      Carolina.camera.influence._x += Carolina.camera.cone.rotation._x / 8;
+      Carolina.camera.influence._y += Carolina.camera.cone.rotation._y / 8;
+      Carolina.camera.influence._z += Carolina.camera.cone.rotation._z / 8;
 
       Carolina.path.update();
 
-      // for (var i = 0, l = Carolina.scenes.length; i < l; i++) {
+      nullObject.position.copy(Carolina.path.points[1]);
+      nullObject.lookAt(Carolina.path.points[0]);
 
-      //   var scene = Carolina.scenes[i];
+      for (var k in Carolina.triggers) {
 
-      //   if (!scene.enabled) {
-      //     continue;
-      //   }
+        var list = Carolina.triggers[k];
 
-      //   scene.update();
+        if (list.index >= list.length) {
+          continue;
+        }
 
-      // }
+        var t = list[list.index];
+
+        if (t.startTime <= currentMillis) {
+          var o = Carolina.objects[k].active;
+          o.duration = Math.max(t.duration, 2500);
+          o.start(Carolina.path.points[0], nullObject.rotation);
+          list.index++;
+        }
+
+      }
 
       Carolina.renderer.render(Carolina.scene, Carolina.camera);
 
@@ -217,75 +284,34 @@
     camera: null,
 
     /**
-     * Scenes
+     * Scene construction
      */
 
-    intro: (function() {
+    objects: {},
 
-      var group = {};
+    instances: [],
 
-      return group;
+    structs: {
 
-    })(),
+      'snare': Snare
 
-    outro: (function() {
+    },
 
-      var group = {};
+    register: function(name, size) {
 
-      return group;
+      var list = _.map(_.range(size), function(i) {
+        var obj = new Carolina.structs[name]();
+        Carolina.scene.add(obj);
+        return obj;
+      });
 
-    })(),
+      this.objects[name] = new Pool(list);
+      this.instances = this.instances.concat(list);
 
-    verses: [
-      (function() {
+      return Carolina;
 
-        var group = {};
-
-        return group;
-
-      })(),
-      (function() {
-
-        var group = {};
-
-        return group;
-
-      })(),
-      (function() {
-
-        var group = {};
-
-        return group;
-
-      })()
-    ],
-
-    chorus: (function() {
-
-      var group = {};
-
-      return group;
-
-    })(),
-
-    transition: (function() {
-
-      var group = {};
-
-      return group;
-
-    })()
+    }
 
   };
-
-  Carolina.scenes = [
-    Carolina.intro,
-    Carolina.verses[0],
-    Carolina.verses[1],
-    Carolina.verses[2],
-    Carolina.chorus,
-    Carolina.outro,
-    Carolina.transition
-  ];
 
 })();

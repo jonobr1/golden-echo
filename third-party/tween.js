@@ -66,13 +66,13 @@ var TWEEN = TWEEN || ( function () {
 
       if ( _tweens.length === 0 ) return false;
 
-      // var i = 0;
+      var tweens = _tweens.slice();
 
       time = time !== undefined ? time : TWEEN.clock.now();
 
-      for ( var i = 0, l = _tweens.length; i < l; i++ ) {
+      for ( var i = 0, l = tweens.length; i < l; i++ ) {
 
-        _tweens[ i ].update( time );
+        tweens[ i ].update( time );
 
       }
 

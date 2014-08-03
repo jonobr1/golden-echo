@@ -2110,7 +2110,7 @@ THREE.Vector3.prototype = {
 
       return this.sub( v1 );
 
-    }
+    };
 
   }(),
 
@@ -2127,7 +2127,7 @@ THREE.Vector3.prototype = {
 
       return this.sub( v1.copy( normal ).multiplyScalar( 2 * this.dot( normal ) ) );
 
-    }
+    };
 
   }(),
 

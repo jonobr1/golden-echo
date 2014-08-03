@@ -55,16 +55,22 @@
     var points = this.points.splice(this.points.length - (index + 1), index + 1);
 
     // TODO: Should we make this vector additive? (Would make more spirals)
-    vector.set(0, 0, this.camera.velocity).applyEuler(this.camera.cone.rotation);
+    vector.set(0, 0, this.camera.velocity).applyEuler(this.camera.influence);
 
-    for (i = l = points.length - 1; i >= 0; i--) {
+    for (i = l = points.length - 1, count = 1; i >= 0; i--) {
+
       var p = points[i];
+
       if (i >= l) {
         p.copy(this.points[0]);
       } else {
         p.copy(points[i + 1]);
       }
+
       p.add(vector);
+
+      count++;
+
     }
 
     this.points = points.concat(this.points);
