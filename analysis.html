@@ -3,23 +3,27 @@
   <head></head>
   <body>
     <div class="scripts">
+      <script src="./third-party/tween.js"></script>
       <script src="./third-party/two.js"></script>
       <script src="./third-party/sound.js"></script>
       <script src="./third-party/analyser.js"></script>
       <script>
 
         var two = new Two({
-          type: Two.Types.canvas,
+          // type: Two.Types.canvas,
           fullscreen: true,
           autostart: true
         }).appendTo(document.body);
+
+        var elapsedTime = document.createElement('div');
+        var index = localStorage['selected-index'] || 16;
 
         var triggers = [];
 
         Analyser.ready(function() {
 
           var path = './audio/stems/';
-          var filename = '+i Carolina - RC Mix 4 Bass Stem.wav';
+          var filename = '+c Carolina - RC Mix 4 Kick Stem.wav';
 
           // var path = './audio/';
           // var filename = 'carolina.mp3';
@@ -30,6 +34,8 @@
              * Start analysis
              */
             audio.play();
+            triggers.startTime = TWEEN.clock.now();
+
             audio.source.onended = function() {
 
               console.log(JSON.stringify(triggers));
@@ -63,11 +69,27 @@
               rect.linewidth = 10;
               rect.stroke = rect.fill = 'orange';
 
+              if (index == i) {
+                rect.stroke = rect.fill = 'rgb(0, 200, 255)';
+              }
+
               rect._matrix.manual = true;
               rect._matrix.identity()
                 .translate(rect.translation.x, rect.translation.y);
 
               two.scene.add(rect);
+
+              two.update();
+
+              rect._renderer.elem.addEventListener('click', function() {
+                index = i;
+                localStorage['selected-index'] = index;
+                _.each(bands, function(b) {
+                  b.fill = b.stroke = 'orange';
+                });
+                solo.fill = solo.stroke = 'magenta';
+                rect.fill = rect.stroke = 'rgb(0, 200, 255)';
+              }, false);
 
               return rect;
 
@@ -96,6 +118,17 @@
               .translate(solo.translation.x, solo.translation.y);
 
             two.scene.add(solo);
+
+            two.update();
+
+            solo._renderer.elem.addEventListener('click', function() {
+              index = frequencyBinCount;
+              localStorage['selected-index'] = index;
+              _.each(bands, function(b) {
+                b.fill = b.stroke = 'orange';
+              });
+              solo.fill = solo.stroke = 'rgb(0, 200, 255)';
+            }, false);
 
             var progress = new Two.Polygon([
               new Two.Anchor(), 
@@ -164,6 +197,7 @@
                 var b = bands[i];
                 var amp = frequencyData[Math.floor(audio.analyser.frequencyBinCount * i / l)] / 255;
 
+                b.sy = amp;
                 b._matrix
                   .identity()
                   .translate(b.translation.x, b.translation.y)
@@ -178,6 +212,8 @@
 
               avg /= cumulativeBins;
 
+              var selected = bands[index] ? bands[index].sy : avg;
+
               solo._matrix
                 .identity()
                 .translate(solo.translation.x, solo.translation.y)
@@ -189,9 +225,7 @@
 
               var t = now();
 
-
-
-              if (avg > threshold.value) {
+              if (selected > threshold.value) {
 
                 // Initialize
                 if (!data) {
@@ -215,7 +249,8 @@
 
             function now() {
 
-              return Math.floor((Sound.ctx.currentTime - audio.startTime) * 1000);
+              return TWEEN.clock.now() - triggers.startTime;
+              // return Math.floor((Sound.ctx.currentTime - audio.startTime) * 1000);
 
             }
 

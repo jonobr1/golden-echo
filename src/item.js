@@ -3,7 +3,8 @@
   var root = this;
   var previousItem = root.Item || {};
 
-  var Superclass = THREE.Mesh;
+  var Superclass = THREE.Mesh, empty = {};
+  var vector = new THREE.Vector3();
 
   var Item = root.Item = function() {
 
@@ -14,7 +15,7 @@
 
     this.tween = new TWEEN.Tween(this)
       .onUpdate(_.bind(this.update, this))
-      .onComplete(_.bind(this.reset, this));
+      .onComplete(_.bind(this.stop, this));
 
     this.offset = new THREE.Vector3();
 
@@ -32,6 +33,13 @@
     duration: 0,
 
     /**
+     * A normalized value to determine a scalar of some kind on the item's
+     * geometry that is tied to the duration of the corresponding
+     * audio's existence.
+     */
+    t: 0,
+
+    /**
      * Is the item currently enabled?
      */
     enabled: false,
@@ -41,12 +49,16 @@
      */
     start: function(origin, direction) {
 
-      if (this.enabled) {
-        return this;
-      }
+      this.reset();
 
-      this.enabled = true;
-      this.tween.start();
+      this.enabled = this.visible = true;
+
+      vector.copy(this.offset).applyEuler(direction);
+
+      this.position.copy(origin).add(vector);
+      this.rotation.copy(direction);
+
+      this.tween.to(empty, this.duration).start();
 
       return this;
 
@@ -65,7 +77,11 @@
      * Reset the state of the item to its initialized settings. i.e: previsible
      * rendered state.
      */
-    reset: function() {
+    stop: function() {
+
+      if (!this.enabled) {
+        return this;
+      }
 
       this.visible = this.enabled = false;
       this.tween.stop();

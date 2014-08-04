@@ -8,6 +8,7 @@
   var previousCarolina = root.Carolina || {};
 
   var callbacks = [], lastFrame, nullObject = new THREE.Object3D();
+  var vector = new THREE.Vector3();
 
   var onload = _.after(2, function() {
 
@@ -25,7 +26,8 @@
 
       var triggers = {};
       var types = [
-        'snare'
+        // 'snare'
+        'kicks'
       ];
       var ready = _.after(types.length, onload);
 
@@ -114,30 +116,30 @@
       Carolina.scene.add(Carolina.camera);
       Carolina.camera.add(Carolina.camera.cone);
 
-      var pointCloud = (function() {
+      // var pointCloud = (function() {
 
-        var amt = 5000;
+      //   var amt = 5000;
 
-        var mesh = new THREE.PointCloud(new THREE.Geometry(), new THREE.PointCloudMaterial({
-          color: 0xffffff,
-          size: 3,
-          sizeAttenuation: true
-        }));
+      //   var mesh = new THREE.PointCloud(new THREE.Geometry(), new THREE.PointCloudMaterial({
+      //     color: 0xffffff,
+      //     size: 3,
+      //     sizeAttenuation: true
+      //   }));
 
-        for (var i = 0; i < amt; i++) {
-          var x = Math.random() * Carolina.camera.far * 2 - Carolina.camera.far;
-          var y = Math.random() * Carolina.camera.far;
-          var z = Math.random() * Carolina.camera.far * 10;
-          mesh.geometry.vertices.push(new THREE.Vector3(x, y, z));
-        }
+      //   for (var i = 0; i < amt; i++) {
+      //     var x = Math.random() * Carolina.camera.far * 2 - Carolina.camera.far;
+      //     var y = Math.random() * Carolina.camera.far;
+      //     var z = Math.random() * Carolina.camera.far * 10;
+      //     mesh.geometry.vertices.push(new THREE.Vector3(x, y, z));
+      //   }
 
-        mesh.geometry.verticesNeedUpdate = true;
+      //   mesh.geometry.verticesNeedUpdate = true;
 
-        return mesh;
+      //   return mesh;
 
-      })();
+      // })();
 
-      Carolina.ground.add(pointCloud);
+      // Carolina.ground.add(pointCloud);
 
       var drag = function(e) {
 
@@ -229,7 +231,9 @@
         Carolina.currentTime += timeDelta / 1000;
       }
 
+      var minDuration = Math.floor(timeDelta * (Carolina.camera.far / Carolina.camera.velocity));
       var currentMillis = Carolina.currentTime * 1000;
+      var bufferMillis = minDuration * 1.25;
 
       TWEEN.update(currentMillis);
 
@@ -242,7 +246,7 @@
       nullObject.position.copy(Carolina.path.points[1]);
       nullObject.lookAt(Carolina.path.points[0]);
 
-      var minDuration = Math.floor(timeDelta * (Carolina.camera.far / Carolina.camera.velocity));
+      vector.copy(Carolina.path.getPoint(0.1));
 
       for (var k in Carolina.triggers) {
 
@@ -254,10 +258,11 @@
 
         var t = list[list.index];
 
-        if (t.startTime <= currentMillis) {
+        if (t.startTime <= currentMillis + bufferMillis) {
           var o = Carolina.objects[k].active;
-          o.duration = Math.max(t.duration, minDuration);
-          o.start(Carolina.path.points[0], nullObject.rotation);
+          o.duration = minDuration;
+          o.t = t.duration / 1000;
+          o.start(vector, nullObject.rotation);
           list.index++;
         }
 
@@ -299,11 +304,14 @@
 
     structs: {
 
-      'snare': Snare
+      // 'snare': Snare
+      'kicks': Kicks
 
     },
 
     register: function(name, size) {
+
+      console.log('There will be', size, name);
 
       var list = _.map(_.range(size), function(i) {
         var obj = new Carolina.structs[name]();
