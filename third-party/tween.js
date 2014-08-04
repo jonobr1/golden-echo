@@ -70,15 +70,13 @@ var TWEEN = TWEEN || ( function () {
 
       var tweens = _tweens.slice();
 
-      time = time !== undefined ? time : TWEEN.clock.now();
+      time = this.currentTime = ( time !== undefined ) ? time : TWEEN.clock.now();
 
       for ( var i = 0, l = tweens.length; i < l; i++ ) {
 
         tweens[ i ].update( time );
 
       }
-
-      this.currentTime = time;
 
       return true;
 
@@ -126,7 +124,7 @@ TWEEN.Tween = function ( object ) {
 
     _onStartCallbackFired = false;
 
-    _startTime = time !== undefined ? time : TWEEN.clock.now();
+    _startTime = time !== undefined ? time : TWEEN.currentTime;
     _startTime += _delayTime;
 
     for ( var property in _valuesEnd ) {

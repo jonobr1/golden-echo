@@ -77,8 +77,6 @@
 
     radialResolution: 24,
 
-    ground: new THREE.Vector3(0, - 10, 0),
-
     /**
      * Setup drawing context.
      */
@@ -88,7 +86,10 @@
       Carolina.renderer = new THREE.WebGLRenderer({ antialias: false });
       Carolina.scene = new THREE.Scene();
 
-      Carolina.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
+      Carolina.ground = new THREE.Object3D();
+      Carolina.ground.position.y = - 10;
+
+      Carolina.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
       Carolina.camera.velocity = 5;
       Carolina.camera.cone = (function() {
 
@@ -105,10 +106,11 @@
 
       })();
       Carolina.camera.influence = new THREE.Euler().copy(Carolina.camera.cone.rotation);
-      Carolina.camera.cone.position.set(0, Carolina.ground.y, - 20);
+      Carolina.camera.cone.position.set(0, Carolina.ground.position.y, - 20);
 
       Carolina.path = new Path(Carolina.camera);
 
+      Carolina.scene.add(Carolina.ground);
       Carolina.scene.add(Carolina.camera);
       Carolina.camera.add(Carolina.camera.cone);
 
@@ -135,7 +137,7 @@
 
       })();
 
-      Carolina.scene.add(pointCloud);
+      Carolina.ground.add(pointCloud);
 
       var drag = function(e) {
 
@@ -305,7 +307,7 @@
 
       var list = _.map(_.range(size), function(i) {
         var obj = new Carolina.structs[name]();
-        Carolina.scene.add(obj);
+        Carolina.ground.add(obj);
         return obj;
       });
 
