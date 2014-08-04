@@ -79,6 +79,17 @@
 
     radialResolution: 24,
 
+    // TODO: Utilize palettes
+    palette: [
+      {
+        background: new THREE.Color(0xff7777)
+      }
+    ],
+
+    colors: {
+      background: new THREE.Color(0xff7777)
+    },
+
     /**
      * Setup drawing context.
      */
@@ -96,7 +107,7 @@
       Carolina.camera.cone = (function() {
 
         var mesh = new THREE.Mesh(new THREE.CylinderGeometry(0, 1, 4, 32), new THREE.MeshBasicMaterial({
-          color: 0xff7777
+          color: 0xffffff
         }));
 
         mesh.rotation.x = - Math.PI / 2;
@@ -109,6 +120,9 @@
       })();
       Carolina.camera.influence = new THREE.Euler().copy(Carolina.camera.cone.rotation);
       Carolina.camera.cone.position.set(0, Carolina.ground.position.y, - 20);
+
+      Carolina.scene.fog = new THREE.Fog(Carolina.colors.background, Carolina.camera.far * 0.75, Carolina.camera.far);
+      Carolina.renderer.setClearColor(Carolina.colors.background, 1);
 
       Carolina.path = new Path(Carolina.camera);
 
@@ -163,6 +177,7 @@
       window.addEventListener('resize', Carolina.resize, false);
       Carolina.resize();
 
+      Carolina.renderer.render(Carolina.scene, Carolina.camera);
       document.body.appendChild(Carolina.renderer.domElement);
 
       Carolina.ready(callback);
