@@ -92,7 +92,7 @@
       Carolina.ground.position.y = - 10;
 
       Carolina.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
-      Carolina.camera.velocity = 5;
+      Carolina.camera.velocity = Carolina.camera.far * 5 / 1000;
       Carolina.camera.cone = (function() {
 
         var mesh = new THREE.Mesh(new THREE.CylinderGeometry(0, 1, 4, 32), new THREE.MeshBasicMaterial({
