@@ -34,7 +34,6 @@
              * Start analysis
              */
             audio.play();
-            triggers.startTime = TWEEN.clock.now();
 
             audio.source.onended = function() {
 
@@ -247,9 +246,11 @@
 
             });
 
+            triggers.startTime = TWEEN.clock.now();
+
             function now() {
 
-              return TWEEN.clock.now() - triggers.startTime;
+              return Math.floor(TWEEN.clock.now() - triggers.startTime);
               // return Math.floor((Sound.ctx.currentTime - audio.startTime) * 1000);
 
             }

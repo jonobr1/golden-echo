@@ -11,13 +11,13 @@
 
   };
 
-  Kicks.Offset = 50;
+  Kicks.Offset = 33 ;
 
   Kicks.prototype = Object.create(Item.prototype);
 
   _.extend(Kicks.prototype, {
 
-    Geometry: new THREE.BoxGeometry(10, 10, 10),
+    Geometry: new THREE.BoxGeometry(5, 5, 5),
 
     Material: new THREE.MeshBasicMaterial({
       color: 0xffffff
@@ -27,8 +27,7 @@
 
       Item.prototype.start.call(this, origin, direction);
 
-      this.scale.z = Math.max(this.t, 1);
-      this.scale.y = 1 + this.t;
+      // this.scale.z = 1 + this.t * 10;
 
       return this;
 
@@ -41,10 +40,10 @@
       switch (resetCount) {
 
         case 0:
-          this.offset.x = - Kicks.Offset;// - Math.random() * Kicks.Offset * 2;
+          this.offset.x = - Kicks.Offset;
           break;
         case 1:
-          this.offset.x = Kicks.Offset;// + Math.random() * Kicks.Offset * 2;
+          this.offset.x = Kicks.Offset;
           break;
 
       }

@@ -130,31 +130,6 @@
       Carolina.scene.add(Carolina.camera);
       Carolina.camera.add(Carolina.camera.cone);
 
-      // var pointCloud = (function() {
-
-      //   var amt = 5000;
-
-      //   var mesh = new THREE.PointCloud(new THREE.Geometry(), new THREE.PointCloudMaterial({
-      //     color: 0xffffff,
-      //     size: 3,
-      //     sizeAttenuation: true
-      //   }));
-
-      //   for (var i = 0; i < amt; i++) {
-      //     var x = Math.random() * Carolina.camera.far * 2 - Carolina.camera.far;
-      //     var y = Math.random() * Carolina.camera.far;
-      //     var z = Math.random() * Carolina.camera.far * 10;
-      //     mesh.geometry.vertices.push(new THREE.Vector3(x, y, z));
-      //   }
-
-      //   mesh.geometry.verticesNeedUpdate = true;
-
-      //   return mesh;
-
-      // })();
-
-      // Carolina.ground.add(pointCloud);
-
       var drag = function(e) {
 
         var pct = e.clientX / window.innerWidth;
