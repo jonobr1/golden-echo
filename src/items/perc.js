@@ -6,11 +6,11 @@
   var vector = new THREE.Vector3();
   var geometry = new THREE.Geometry();
   var MAT = new THREE.Matrix4();
-  var amt = Math.PI / 48;
+  var amt = Math.PI / 120;
 
-  geometry.vertices = _.map(_.range(100), function(i) {
+  geometry.vertices = _.map(_.range(250), function(i) {
 
-    var radius = 125;
+    var radius = 250;
     var theta = Math.random() * Math.PI * 2;
     var x = radius * Math.cos(theta);
     var y = radius * Math.sin(theta);

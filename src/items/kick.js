@@ -20,16 +20,21 @@
     Geometry: new THREE.BoxGeometry(5, 5, 5),
 
     Material: new THREE.MeshBasicMaterial({
-      color: 'rgb(0, 200, 255)'
+      color: 0xffffff
     }),
 
     start: function(origin, direction) {
 
       Item.prototype.start.call(this, origin, direction);
 
-      // this.scale.z = 1 + this.t * 10;
-
       return this;
+
+    },
+
+    /**
+     * Take the average amplitude and scale each kick by some scalar.
+     */
+    update: function() {
 
     },
 

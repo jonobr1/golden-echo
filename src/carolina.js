@@ -108,7 +108,7 @@
       Carolina.camera.cone = (function() {
 
         var mesh = new THREE.Mesh(new THREE.CylinderGeometry(0, 1, 4, 32), new THREE.MeshBasicMaterial({
-          color: 0xffffff
+          color: 0x555555
         }));
 
         mesh.rotation.x = - Math.PI / 2;
