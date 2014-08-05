@@ -27,7 +27,8 @@
       var triggers = {};
       var types = [
         'prog',
-        'kick'
+        'kick',
+        'perc'
       ];
       var ready = _.after(types.length, onload);
 
@@ -295,7 +296,8 @@
     structs: {
 
       'prog': Prog,
-      'kick': Kick
+      'kick': Kick,
+      'perc': Perc
 
     },
 

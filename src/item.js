@@ -9,7 +9,7 @@
   var Item = root.Item = function() {
 
     var geometry = this.Geometry;
-    var material = this.Material.clone();
+    var material = this.Material;
 
     Superclass.call(this, geometry, material);
 
@@ -23,9 +23,38 @@
 
   };
 
-  Item.prototype = Object.create(Superclass.prototype);
+  var PointCloud = function() {
 
-  _.extend(Item.prototype, {
+    var geometry = this.Geometry;
+    var material = this.Material;
+
+    THREE.PointCloud.call(this, geometry, material);
+
+    this.tween = new TWEEN.Tween(this)
+      .onUpdate(_.bind(this.update, this))
+      .onComplete(_.bind(this.stop, this));
+
+    this.offset = new THREE.Vector3();
+
+    this.reset();
+
+  };
+
+  var Object3D = function() {
+
+    THREE.Object3D.call(this);
+
+    this.tween = new TWEEN.Tween(this)
+      .onUpdate(_.bind(this.update, this))
+      .onComplete(_.bind(this.stop, this));
+
+    this.offset = new THREE.Vector3();
+
+    this.reset();
+
+  };
+
+  var ItemProto = {
 
     /**
      * The duration in milliseconds of how long the item stays visible.
@@ -92,6 +121,17 @@
 
     }
 
-  });
+  };
+
+  Item.prototype = Object.create(Superclass.prototype);
+  PointCloud.prototype = Object.create(THREE.PointCloud.prototype);
+  Object3D.prototype = Object.create(THREE.Object3D.prototype);
+
+  _.extend(Item.prototype, ItemProto);
+  _.extend(PointCloud.prototype, ItemProto);
+  _.extend(Object3D.prototype, ItemProto);
+
+  Item.PointCloud = PointCloud;
+  Item.Object3D = Object3D;
 
 })();

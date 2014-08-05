@@ -20,7 +20,7 @@
     Geometry: new THREE.BoxGeometry(5, 5, 5),
 
     Material: new THREE.MeshBasicMaterial({
-      color: 0xffffff
+      color: 'rgb(0, 200, 255)'
     }),
 
     start: function(origin, direction) {
