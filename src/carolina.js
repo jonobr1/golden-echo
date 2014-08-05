@@ -26,8 +26,8 @@
 
       var triggers = {};
       var types = [
-        // 'snare'
-        'kicks'
+        'prog',
+        'kick'
       ];
       var ready = _.after(types.length, onload);
 
@@ -294,8 +294,8 @@
 
     structs: {
 
-      // 'snare': Snare
-      'kicks': Kicks
+      'prog': Prog,
+      'kick': Kick
 
     },
 

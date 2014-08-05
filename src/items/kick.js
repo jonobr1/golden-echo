@@ -1,21 +1,21 @@
 (function() {
 
   var root = this;
-  var previousKicks = root.Kicks || {};
+  var previousKick = root.Kick || {};
 
   var resetCount = 0, vector = new THREE.Vector3();
 
-  var Kicks = root.Kicks = function() {
+  var Kick = root.Kick = function() {
 
     Item.call(this);
 
   };
 
-  Kicks.Offset = 33 ;
+  Kick.Offset = 33;
 
-  Kicks.prototype = Object.create(Item.prototype);
+  Kick.prototype = Object.create(Item.prototype);
 
-  _.extend(Kicks.prototype, {
+  _.extend(Kick.prototype, {
 
     Geometry: new THREE.BoxGeometry(5, 5, 5),
 
@@ -40,10 +40,10 @@
       switch (resetCount) {
 
         case 0:
-          this.offset.x = - Kicks.Offset;
+          this.offset.x = - Kick.Offset;
           break;
         case 1:
-          this.offset.x = Kicks.Offset;
+          this.offset.x = Kick.Offset;
           break;
 
       }

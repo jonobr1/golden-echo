@@ -84,6 +84,8 @@
       }
 
       this.visible = this.enabled = false;
+      this.position.set(Infinity, Infinity, Infinity);
+
       this.tween.stop();
 
       return this;
