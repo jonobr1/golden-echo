@@ -6,7 +6,7 @@
   var vector = new THREE.Vector3();
   var geometry = new THREE.Geometry();
   var MAT = new THREE.Matrix4();
-  var amt = Math.PI / 32;
+  var amt = Math.PI / 48;
 
   geometry.vertices = _.map(_.range(100), function(i) {
 
