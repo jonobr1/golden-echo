@@ -32,11 +32,15 @@ var TWEEN = TWEEN || ( function () {
 
     getAll: function () {
 
-      return _tweens;
+      return _tweens.slice(0);
 
     },
 
     removeAll: function () {
+
+      for ( var i = 0, l = _tweens.length; i < l; i++ ) {
+        delete _tweens[i].index;
+      }
 
       _tweens.length = 0;
 
@@ -59,8 +63,24 @@ var TWEEN = TWEEN || ( function () {
         return;
       }
 
-      _tweens.splice( tween.index, 1 );
+      _tweens[tween.index] = null;
       delete tween.index;
+
+    },
+
+    flush: function() {
+
+      var list = [];
+
+      for (var i = 0, l = _tweens.length; i < l; i++) {
+        var tween = _tweens[ i ];
+        if (tween) {
+          tween.index = list.length;
+          list.push(tween);
+        }
+      }
+
+      _tweens = list;
 
     },
 
@@ -74,7 +94,13 @@ var TWEEN = TWEEN || ( function () {
 
       for ( var i = 0, l = tweens.length; i < l; i++ ) {
 
-        tweens[ i ].update( time );
+        var tween = tweens[ i ];
+
+        if (!tween) {
+          continue;
+        }
+
+        tween.update( time );
 
       }
 

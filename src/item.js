@@ -119,6 +119,13 @@
 
       return this;
 
+    },
+
+    reset: function() {
+
+      this.stop();
+      return this;
+
     }
 
   };

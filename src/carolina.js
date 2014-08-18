@@ -28,7 +28,8 @@
       var types = [
         'prog',
         'kick',
-        'perc'
+        'perc',
+        'timpani'
       ];
       var ready = _.after(types.length, onload);
 
@@ -201,6 +202,12 @@
 
       Carolina.audio.stop();
 
+      for (var k in Carolina.triggers) {
+        Carolina.triggers[k].index = 0;
+      }
+
+      TWEEN.removeAll();
+
       return Carolina;
 
     },
@@ -224,7 +231,7 @@
 
       var minDuration = Math.floor(timeDelta * (Carolina.camera.far / Carolina.camera.velocity));
       var currentMillis = Carolina.currentTime * 1000;
-      var bufferMillis = minDuration * 1.25;
+      var bufferMillis = minDuration * 0.5;
 
       TWEEN.update(currentMillis);
 
@@ -297,7 +304,8 @@
 
       'prog': Prog,
       'kick': Kick,
-      'perc': Perc
+      'perc': Perc,
+      'timpani': Timpani
 
     },
 
