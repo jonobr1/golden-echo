@@ -55,7 +55,9 @@
 
     update: function(t) {
 
-      this.scale.set(t, t, t);
+      var s = t;
+
+      this.scale.set(s, s, s);
       return this;
 
     }

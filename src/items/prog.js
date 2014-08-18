@@ -27,6 +27,8 @@
 
       Item.prototype.start.call(this, origin, direction);
 
+      this.scale.y = Math.random() * 2 + 1;
+
       return this;
 
     },
