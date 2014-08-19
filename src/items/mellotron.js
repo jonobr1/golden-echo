@@ -89,7 +89,7 @@
 
       this.offset.set(
         Math.random() * spread - spread / 2,
-        Math.random() * spread / 2 + spread / 2,
+        Math.random() * spread / 2 + spread / 4,
         0
       );
 
