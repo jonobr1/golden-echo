@@ -15,6 +15,7 @@
       <script src="./third-party/sound.js"></script>
       <script src="./third-party/noise.js"></script>
       <script src="./third-party/xhr.js"></script>
+      <script src="./third-party/url.js"></script>
 
       <script src="./src/pool.js"></script>
       <script src="./src/path.js"></script>
@@ -23,12 +24,18 @@
       <script src="./src/items/kick.js"></script>
       <script src="./src/items/perc.js"></script>
       <script src="./src/items/timpani.js"></script>
+      <script src="./src/items/bass.js"></script>
+      <script src="./src/items/hook.js"></script>
+      <script src="./src/items/guitar.js"></script>
+      <script src="./src/items/mellotron.js"></script>
       <script src="./src/carolina.js"></script>
       <script>
 
         Carolina.init(function() {
 
-          Carolina.play();
+          Carolina.play({
+            elapsed: url.number('startTime', 0)
+          });
 
         });
 

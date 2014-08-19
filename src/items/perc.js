@@ -27,6 +27,7 @@
     Item.PointCloud.call(this);
 
     this.reset();
+    this.position.set(Infinity, Infinity, Infinity);
 
   };
 

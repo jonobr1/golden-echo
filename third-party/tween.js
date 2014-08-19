@@ -275,7 +275,7 @@ TWEEN.Tween = function ( object ) {
 
     if ( _onUpdateCallback !== null ) {
 
-      _onUpdateCallback.call( _object, value );
+      _onUpdateCallback.call( _object, value, elapsed );
 
     }
 

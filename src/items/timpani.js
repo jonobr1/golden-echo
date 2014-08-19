@@ -14,13 +14,14 @@
 
   };
 
-  Timpani.Offset = 75;
+  Timpani.Offset = 500;
 
   var amt = 6;
 
   Timpani.Material = new THREE.MeshBasicMaterial({ color: 0x333333 });
   Timpani.Lines = new THREE.Line(new THREE.Geometry(), new THREE.LineBasicMaterial({
-    color: 0x333333
+    color: 0x333333,
+    linewidth: 2
   }));
 
   Timpani.Lines.geometry.vertices = _.map(_.range(amt + 1), function(i) {
@@ -32,7 +33,7 @@
   });
 
   Timpani.Spheres = _.map(Timpani.Lines.geometry.vertices, function(v) {
-    var mesh = new THREE.Mesh(new THREE.SphereGeometry(1), Timpani.Material);
+    var mesh = new THREE.Mesh(new THREE.SphereGeometry(5), Timpani.Material);
     mesh.position.copy(v);
     return mesh;
   });
@@ -53,7 +54,7 @@
 
     },
 
-    update: function(t) {
+    update: function(v, t) {
 
       var s = t;
 

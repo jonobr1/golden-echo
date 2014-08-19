@@ -31,13 +31,6 @@
 
     },
 
-    /**
-     * Take the average amplitude and scale each kick by some scalar.
-     */
-    update: function() {
-
-    },
-
     reset: function() {
 
       this.stop();

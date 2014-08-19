@@ -4,6 +4,7 @@
   var previousProg = root.Prog || {};
 
   var resetCount = 0, vector = new THREE.Vector3();
+  var width = 20, height = 40;
 
   var Prog = root.Prog = function() {
 
@@ -17,7 +18,7 @@
 
   _.extend(Prog.prototype, {
 
-    Geometry: new THREE.CylinderGeometry(0, 20, 40, 4, 4),
+    Geometry: new THREE.CylinderGeometry(0, width, height, 4, 4),
 
     Material: new THREE.MeshBasicMaterial({
       color: 0x00e196
@@ -27,7 +28,8 @@
 
       Item.prototype.start.call(this, origin, direction);
 
-      this.scale.y = Math.random() * 2 + 1;
+      this.scale.y = this.t * 2 + 1;
+      this.position.y += this.scale.y * height / 4;
 
       return this;
 

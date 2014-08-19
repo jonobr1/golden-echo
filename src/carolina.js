@@ -29,7 +29,11 @@
         'prog',
         'kick',
         'perc',
-        'timpani'
+        'timpani',
+        'bass',
+        'hook',
+        'guitar',
+        'mellotron'
       ];
       var ready = _.after(types.length, onload);
 
@@ -132,11 +136,15 @@
       Carolina.scene.add(Carolina.camera);
       Carolina.camera.add(Carolina.camera.cone);
 
+      var yaw = new THREE.Vector3();
       var drag = function(e) {
 
         var pct = e.clientX / window.innerWidth;
         var dest = (1 - pct) * Carolina.radialBreadth - Carolina.radialBreadth / 2;
         Carolina.camera.cone.rotation.y += (dest - Carolina.camera.cone.rotation.y) * Carolina.drag;
+
+        // pct = e.clientY / window.innerHeight;
+        // Carolina.camera.cone.rotation.x = (1 - pct) * Math.PI / 4 - Math.PI / 8;
 
       };
 
@@ -165,7 +173,7 @@
 
     playing: false,
 
-    play: function() {
+    play: function(options) {
 
       if (Carolina.playing) {
         return Carolina;
@@ -174,9 +182,10 @@
       lastFrame = TWEEN.clock.now();
 
       Carolina.playing = true;
-      Carolina.audio.play();
+      Carolina.audio.play(options);
 
       Carolina.loop();
+      Carolina.currentTime = _.isNumber(options.elapsed) ? options.elapsed : Carolina.currentTime;
 
       return Carolina;
 
@@ -258,7 +267,7 @@
 
         if (t.startTime <= currentMillis + bufferMillis) {
           var o = Carolina.objects[k].active;
-          o.duration = minDuration;
+          o.duration = minDuration * 2;
           o.t = t.duration / 1000;
           o.start(vector, nullObject.rotation);
           list.index++;
@@ -305,7 +314,11 @@
       'prog': Prog,
       'kick': Kick,
       'perc': Perc,
-      'timpani': Timpani
+      'timpani': Timpani,
+      'bass': Bass,
+      'hook': Hook,
+      'guitar': Guitar,
+      'mellotron': Mellotron
 
     },
 

@@ -3,6 +3,7 @@
   <head></head>
   <body>
     <div class="scripts">
+      <script src="./third-party/url.js"></script>
       <script src="./third-party/tween.js"></script>
       <script src="./third-party/two.js"></script>
       <script src="./third-party/sound.js"></script>
@@ -23,7 +24,7 @@
         Analyser.ready(function() {
 
           var path = './audio/stems/';
-          var filename = '+e Carolina - RC Mix 4 Timpani Stem.wav';
+          var filename = '+u Carolina - RC Mix 4 Mellotron-Arp Stem.wav';
 
           // var path = './audio/';
           // var filename = 'carolina.mp3';
@@ -33,7 +34,9 @@
             /**
              * Start analysis
              */
-            audio.play();
+            audio.play({
+              elapsed: url.number('startTime', 0)
+            });
 
             audio.source.onended = function() {
 
@@ -250,7 +253,7 @@
 
             function now() {
 
-              return Math.floor(TWEEN.clock.now() - triggers.startTime);
+              return Math.floor(TWEEN.clock.now() + (url.number('startTime', 0) * 1000) - triggers.startTime);
               // return Math.floor((Sound.ctx.currentTime - audio.startTime) * 1000);
 
             }
