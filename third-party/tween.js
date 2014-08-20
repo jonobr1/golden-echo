@@ -39,6 +39,9 @@ var TWEEN = TWEEN || ( function () {
     removeAll: function () {
 
       for ( var i = 0, l = _tweens.length; i < l; i++ ) {
+        if (!_tweens[i]) {
+          continue;
+        }
         delete _tweens[i].index;
       }
 

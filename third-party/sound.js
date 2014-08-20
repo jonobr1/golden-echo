@@ -23,6 +23,10 @@
 
   var Sound = root.Sound = function(url, callback) {
 
+    this.finished = _.bind(function() {
+      this.trigger('ended');
+    }, this);
+
     Sound.get(url, _.bind(function(buffer) {
 
       this.buffer = buffer;
@@ -88,6 +92,8 @@
         time: ctx.currentTime
       });
 
+      console.log(this.source);
+
       this.source.stop(params.time);
       this.source.disconnect(ctx.destination);
       delete this.source;
@@ -121,6 +127,7 @@
       this.source.buffer = this.buffer;
       this.source.connect(ctx.destination);
       this.source.loop = params.loop;
+      this.source.onended = this.finished;
 
       this.startTime = params.time;
       var elapsed = params.elapsed || this.elapsed;

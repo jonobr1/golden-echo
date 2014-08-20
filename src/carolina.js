@@ -33,7 +33,8 @@
         'bass',
         'hook',
         'guitar',
-        'mellotron'
+        'mellotron',
+        'vanguard'
       ];
       var ready = _.after(types.length, onload);
 
@@ -109,7 +110,9 @@
       Carolina.ground.position.y = - 10;
 
       Carolina.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
-      Carolina.camera.velocity = Carolina.camera.far * 5 / 1000;
+      Carolina.camera.destFov = 75;
+
+      Carolina.camera.velocity = Carolina.camera.destVelocity = Carolina.camera.far * 5 / 1000;
       Carolina.camera.cone = (function() {
 
         var mesh = new THREE.Mesh(new THREE.CylinderGeometry(0, 1, 4, 32), new THREE.MeshBasicMaterial({
@@ -120,6 +123,8 @@
 
         var group = new THREE.Object3D();
         group.add(mesh);
+
+        mesh.visible = false;
 
         return group;
 
@@ -148,7 +153,24 @@
 
       };
 
+      var speedUp = function(e) {
+        Carolina.camera.destVelocity = Carolina.camera.far * 7 / 1000;;
+        // Carolina.camera.destFov = 45;
+      };
+      var slowDown = function(e) {
+        Carolina.camera.destVelocity = Carolina.camera.far * 5 / 1000;;
+        // Carolina.camera.destFov = 75;
+      };
+
+      window.addEventListener('touchstart', speedUp, false);
+      window.addEventListener('touchend', slowDown, false);
+      window.addEventListener('touchcancel', slowDown, false);
+      window.addEventListener('mousedown', speedUp, false);
+      window.addEventListener('mouseup', slowDown, false);
+
       window.addEventListener('touchmove', function(e) {
+
+        e.preventDefault();
 
         var touch = e.changedTouches[0];
 
@@ -157,6 +179,8 @@
           clientY: touch.pageY
         });
 
+        return false;
+
       }, false);
       window.addEventListener('mousemove', drag, false);
       window.addEventListener('resize', Carolina.resize, false);
@@ -164,6 +188,10 @@
 
       Carolina.renderer.render(Carolina.scene, Carolina.camera);
       document.body.appendChild(Carolina.renderer.domElement);
+
+      Carolina.two = new Two({
+        fullscreen: true
+      }).appendTo(document.body);
 
       Carolina.ready(callback);
 
@@ -184,18 +212,14 @@
       Carolina.playing = true;
       Carolina.audio.play(options);
 
-      Carolina.loop();
-      Carolina.currentTime = _.isNumber(options.elapsed) ? options.elapsed : Carolina.currentTime;
+      // Carolina.loop();
+      Carolina.currentTime = options && _.isNumber(options.elapsed) ? options.elapsed : Carolina.currentTime;
 
       return Carolina;
 
     },
 
     pause: function() {
-
-      if (!Carolina.playing) {
-        return Carolina;
-      }
 
       Carolina.playing = false;
       Carolina.audio.pause();
@@ -211,9 +235,9 @@
 
       Carolina.audio.stop();
 
-      for (var k in Carolina.triggers) {
-        Carolina.triggers[k].index = 0;
-      }
+      _.each(Carolina.triggers, function(trigger) {
+        trigger.index = 0;
+      });
 
       TWEEN.removeAll();
 
@@ -223,16 +247,16 @@
 
     loop: function() {
 
+      if (!Carolina.playing) {
+        return;
+      }
+
       var timeDelta, now = TWEEN.clock.now();
 
       if (!!lastFrame) {
         timeDelta = parseFloat((now - lastFrame).toFixed(3));
       }
       lastFrame = now;
-
-      if (Carolina.playing) {
-        requestAnimationFrame(Carolina.loop);
-      }
 
       if (Carolina.playing && timeDelta) {
         Carolina.currentTime += timeDelta / 1000;
@@ -275,6 +299,10 @@
 
       }
 
+      Carolina.camera.fov += (Carolina.camera.destFov - Carolina.camera.fov) * 0.33;
+      Carolina.camera.updateProjectionMatrix();
+      Carolina.camera.velocity += (Carolina.camera.destVelocity - Carolina.camera.velocity) * 0.33;
+
       Carolina.renderer.render(Carolina.scene, Carolina.camera);
 
       return Carolina;
@@ -283,8 +311,8 @@
 
     resize: function() {
 
-      var width = window.innerWidth;
-      var height = window.innerHeight;
+      var width = (screen && screen.width) || window.innerWidth;
+      var height = (screen && screen.height) || window.innerHeight;
 
       Carolina.renderer.setSize(width, height);
       Carolina.camera.aspect = width / height;
@@ -318,7 +346,8 @@
       'bass': Bass,
       'hook': Hook,
       'guitar': Guitar,
-      'mellotron': Mellotron
+      'mellotron': Mellotron,
+      'vanguard': Vanguard
 
     },
 
@@ -326,9 +355,22 @@
 
       console.log('There will be', size, name);
 
+      var struct = Carolina.structs[name];
+
+      switch (struct.type) {
+        case '2d':
+          struct.setInstance(Carolina.two);
+          break;
+      }
+
       var list = _.map(_.range(size), function(i) {
         var obj = new Carolina.structs[name]();
-        Carolina.ground.add(obj);
+        switch (struct.type) {
+          case '2d':
+            break;
+          default:
+            Carolina.ground.add(obj);
+        }
         return obj;
       });
 
@@ -337,8 +379,23 @@
 
       return Carolina;
 
+    },
+
+    reset: function(options) {
+      Carolina.stop().play(options);
+      return Carolina;
     }
 
   };
+
+  loop();
+
+  function loop() {
+
+    requestAnimationFrame(loop);
+
+    Carolina.loop();
+
+  }
 
 })();

@@ -1,0 +1,32 @@
+@import 'bourbon/bourbon';
+
+$font-size: 14px;
+$line-height: 20px;
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-size: $font-size;
+  line-height: $line-height;
+}
+
+button {
+
+  @include button();
+
+  display: block;
+  position: absolute;
+  text-transform: capitalize;
+
+  top: 50%;
+  left: 50%;
+
+  width: 90px;
+  margin-left: -45px;
+
+  text-align: center;
+
+}

@@ -21,7 +21,7 @@
   Mellotron.Offset = spread = 50;
 
   var geometry = new THREE.Geometry();
-  var amt = 5;
+  var amt = 7;
   var radius = 5;
 
   for (var i = 0; i < 1; i++) {
@@ -43,7 +43,6 @@
       v[b] = radius * Math.sin(theta - Math.PI / 5);
 
       geometry.vertices.push(new THREE.Vector3(), v);
-      // geometry.vertices.push(v);
 
     }
   }
@@ -52,8 +51,7 @@
 
   Mellotron.Line = new THREE.Line(geometry, new THREE.LineBasicMaterial({
     color: 0x3333ff,
-    linewidth: 4,
-    sizeAttenuation: false
+    linewidth: 4
   }));
 
   _.extend(Mellotron.prototype, {
