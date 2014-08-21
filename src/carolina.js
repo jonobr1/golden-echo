@@ -10,6 +10,101 @@
   var callbacks = [], lastFrame, nullObject = new THREE.Object3D();
   var vector = new THREE.Vector3();
 
+  var pacing = [
+    { startTime: 0, palette: 0 },
+    { startTime: 40.41720300000004 * 1000, palette: 1 },
+    { startTime: 72.06894500000004 * 1000, palette: 2 },
+    { startTime: 95.51321599999989 * 1000, palette: 4 },
+    { startTime: 142.6998529999998 * 1000, palette: 3 },
+    { startTime: 166.29350599999967 * 1000, palette: 4 },
+    { startTime: 229.26353299999968 * 1000, palette: 0 }
+  ];
+  pacing.index = 0;
+
+  var feelingIt = [
+    { startTime: 100.37431099999995 * 1000 },
+    { startTime: 102.31557599999991 * 1000 },
+    { startTime: 108.26768899999989 * 1000 },
+    { startTime: 116.13101599999978 * 1000 },
+    { startTime: 118.05033499999975 * 1000 },
+    { startTime: 171.1942029999997 * 1000 },
+    { startTime: 173.12963699999986 * 1000 },
+    { startTime: 179.08271100000007 * 1000 },
+    { startTime: 186.92243099999982 * 1000 },
+    { startTime: 188.89720899999975 * 1000 }
+    // { startTime: 194.8994769999995 * 1000 }
+  ];
+  feelingIt.index = 0;
+
+  var colors = {
+    lobby: [
+      'rgb(255, 255, 255)',
+      'rgb(222, 62, 81)',
+      'rgb(92, 148, 66)',
+      'rgb(237, 115, 54)',
+      'rgb(238, 110, 73)',
+      'rgb(121, 73, 140)',
+      'rgb(40, 78, 120)',
+      'rgb(99, 46, 30)',
+      'rgb(58, 71, 100)',
+      'rgb(239, 173, 180)'
+    ],
+    firstVerse: [
+      'rgb(211, 211, 211)',
+      'rgb(254, 235, 132)',
+      'rgb(235, 112, 77)',
+      'rgb(0, 185, 242)',
+      'rgb(70, 184, 85)',
+      'rgb(184, 73, 120)',
+      'rgb(109, 100, 147)',
+      'rgb(68, 88, 113)',
+      'rgb(12, 12, 12)',
+      'rgb(70, 106, 208)'
+    ],
+    secondVerse: [
+      'rgb(197, 220, 223)',
+      'rgb(96, 128, 182)',
+      'rgb(132, 175, 191)',
+      'rgb(253, 148, 144)',
+      'rgb(254, 233, 126)',
+      'rgb(225, 253, 223)',
+      'rgb(172, 172, 172)',
+      'rgb(147, 185, 151)',
+      'rgb(20, 20, 20)',
+      'rgb(247, 149, 82)'
+    ],
+    thirdVerse: [
+      'rgb(151, 244, 255)',
+      'rgb(251, 243, 176)',
+      'rgb(165, 220, 141)',
+      'rgb(133, 106, 166)',
+      'rgb(237, 148, 179)',
+      'rgb(88, 90, 225)',
+      'rgb(41, 53, 188)',
+      'rgb(55, 55, 55)',
+      'rgb(246, 50, 50)',
+      'rgb(250, 200, 120)'
+    ],
+    chorus: [
+      'rgb(245, 233, 120)',
+      'rgb(155, 136, 162)',
+      'rgb(255, 9, 89)',
+      'rgb(229, 23, 87)',
+      'rgb(12, 109, 82)',
+      'rgb(220, 14, 2)',
+      'rgb(104, 135, 5)',
+      'rgb(131, 161, 197)',
+      'rgb(126, 61, 100)',
+      'rgb(212, 110, 25)'
+    ]
+  };
+
+  _.each(colors, function(list, name) {
+    _.each(list, function(color, i) {
+      colors[name][i] = new THREE.Color(color);
+    });
+  });
+
   var onload = _.after(2, function() {
 
     Carolina._ready = true;
@@ -86,21 +181,20 @@
 
     radialResolution: 24,
 
-    // TODO: Utilize palettes
     palette: [
-      {
-        background: new THREE.Color(0xff7777)
-      }
+      colors.lobby,
+      colors.firstVerse,
+      colors.secondVerse,
+      colors.thirdVerse,
+      colors.chorus
     ],
-
-    colors: {
-      background: new THREE.Color(0xff7777)
-    },
 
     /**
      * Setup drawing context.
      */
     init: function(callback) {
+
+      var container = document.querySelector('#content');
 
       // Create the renderer and other initial objects
       Carolina.renderer = new THREE.WebGLRenderer({ antialias: false });
@@ -109,8 +203,8 @@
       Carolina.ground = new THREE.Object3D();
       Carolina.ground.position.y = - 10;
 
-      Carolina.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
-      Carolina.camera.destFov = 75;
+      Carolina.camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
+      Carolina.camera.destFov = 70;
 
       Carolina.camera.velocity = Carolina.camera.destVelocity = Carolina.camera.far * 5 / 1000;
       Carolina.camera.cone = (function() {
@@ -132,8 +226,8 @@
       Carolina.camera.influence = new THREE.Euler().copy(Carolina.camera.cone.rotation);
       Carolina.camera.cone.position.set(0, Carolina.ground.position.y, - 20);
 
-      Carolina.scene.fog = new THREE.Fog(Carolina.colors.background, Carolina.camera.far * 0.75, Carolina.camera.far);
-      Carolina.renderer.setClearColor(Carolina.colors.background, 1);
+      Carolina.scene.fog = new THREE.Fog(0xffffff, Carolina.camera.far * 0.75, Carolina.camera.far);
+      Carolina.renderer.setClearColor(0xffffff, 1);
 
       Carolina.path = new Path(Carolina.camera);
 
@@ -187,11 +281,11 @@
       Carolina.resize();
 
       Carolina.renderer.render(Carolina.scene, Carolina.camera);
-      document.body.appendChild(Carolina.renderer.domElement);
+      container.appendChild(Carolina.renderer.domElement);
 
-      Carolina.two = new Two({
-        fullscreen: true
-      }).appendTo(document.body);
+      // Carolina.two = new Two({
+      //   fullscreen: true
+      // }).appendTo(container);
 
       Carolina.ready(callback);
 
@@ -231,6 +325,8 @@
     stop: function() {
 
       Carolina.currentTime = 0;
+      pacing.index = 0;
+      feelingIt.index = 0;
       Carolina.playing = false;
 
       Carolina.audio.stop();
@@ -299,7 +395,18 @@
 
       }
 
-      Carolina.camera.fov += (Carolina.camera.destFov - Carolina.camera.fov) * 0.33;
+      if (pacing.index < pacing.length && pacing[pacing.index].startTime <= currentMillis) {
+        Carolina.setColors(Carolina.palette[pacing[pacing.index].palette]);
+        pacing.index++;
+      }
+
+      if (feelingIt.index < feelingIt.length && feelingIt[feelingIt.index].startTime <= currentMillis) {
+        // Carolina.camera.fov = 1;
+        Carolina.camera.destFov = Carolina.camera.destFov === 70 ? 140 : 70;
+        feelingIt.index++;
+      }
+
+      Carolina.camera.fov += (Carolina.camera.destFov - Carolina.camera.fov) * 0.0625;
       Carolina.camera.updateProjectionMatrix();
       Carolina.camera.velocity += (Carolina.camera.destVelocity - Carolina.camera.velocity) * 0.33;
 
@@ -311,8 +418,8 @@
 
     resize: function() {
 
-      var width = (screen && screen.width) || window.innerWidth;
-      var height = (screen && screen.height) || window.innerHeight;
+      var width = window.innerWidth;
+      var height = window.innerHeight;
 
       Carolina.renderer.setSize(width, height);
       Carolina.camera.aspect = width / height;
@@ -357,17 +464,17 @@
 
       var struct = Carolina.structs[name];
 
-      switch (struct.type) {
-        case '2d':
-          struct.setInstance(Carolina.two);
-          break;
-      }
+      // switch (struct.type) {
+      //   case '2d':
+      //     struct.setInstance(Carolina.two);
+      //     break;
+      // }
 
       var list = _.map(_.range(size), function(i) {
         var obj = new Carolina.structs[name]();
         switch (struct.type) {
-          case '2d':
-            break;
+          // case '2d':
+          //   break;
           default:
             Carolina.ground.add(obj);
         }
@@ -384,7 +491,61 @@
     reset: function(options) {
       Carolina.stop().play(options);
       return Carolina;
-    }
+    },
+
+    setColors: function(palette) {
+
+      for (var k in Carolina.structs) {
+        var struct = Carolina.structs[k];
+        var color = palette[struct.distinction % palette.length];
+        struct.setColor(color);
+      }
+
+      Carolina.setBackground(palette[0]);
+
+      // Carolina.scene.fog.color.copy(palette[0]);
+      // Carolina.renderer.setClearColor(palette[0], 1);
+
+      return Carolina;
+
+    },
+
+    setPalette: function(palette) {
+
+      for (var k in Carolina.structs) {
+        var struct = Carolina.structs[k];
+        var color = palette[struct.distinction % palette.length];
+        struct.changeColor(color);
+      }
+
+      Carolina.setBackground(palette[0]);
+
+      return Carolina;
+
+    },
+
+    colorDuration: 1000,
+
+    setBackground: (function() {
+
+      var color = new THREE.Color();
+      var tween = new TWEEN.Tween(color)
+        .onUpdate(function() {
+
+          Carolina.scene.fog.color.copy(color);
+          Carolina.renderer.setClearColor(color, 1);
+
+        })
+        .onComplete(function() {
+          tween.stop();
+        });
+
+      return function(c, duration) {
+        tween.to(c, duration || Carolina.colorDuration)
+        tween.start();
+      };
+
+    })()
 
   };
 

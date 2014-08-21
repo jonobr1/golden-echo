@@ -33,10 +33,31 @@
 
   };
 
-  var geometry = new THREE.BoxGeometry(width, height, depth);
-  var material = new THREE.MeshBasicMaterial({
+  var geometry = Vanguard.Geometry = new THREE.BoxGeometry(width, height, depth);
+  var material = Vanguard.Material = new THREE.MeshBasicMaterial({
     color: 0xffffff
   });
+  Vanguard.distinction = 9;
+  Vanguard.colorDuration = 1000;
+  Vanguard.changeColor = (function() {
+
+    var tween = new TWEEN.Tween(Vanguard.Material.color)
+      .onUpdate(function() {
+        Vanguard.Material.needsUpdate = true;
+      }).onComplete(function() {
+        tween.stop();
+      });;
+
+    return function(c, duration) {
+      tween.to(c, duration || Vanguard.colorDuration)
+      tween.start();
+    };
+
+  })();
+  Vanguard.setColor = function(color) {
+    Vanguard.Material.color.copy(color);
+    Vanguard.Material.needsUpdate = true;
+  };
 
   Vanguard.prototype = Object.create(Item.Object3D.prototype);
 

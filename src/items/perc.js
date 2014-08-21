@@ -50,13 +50,37 @@
   ctx.arc(canvas.width / 2, canvas.height / 2, (canvas.width - ctx.lineWidth) / 2, 0, Math.PI * 2, false);
   ctx.fill();
 
-  var material = new THREE.PointCloudMaterial({
+  Perc.Geometry = geometry;
+  var material = Perc.Material = new THREE.PointCloudMaterial({
     color: 0xffffff,
     size: 3,
     transparent: true,
     opacity: 0.66,
+    blending: THREE.AdditiveBlending,
     map: new THREE.Texture(canvas)
   });
+
+  Perc.distinction = 6;
+  Perc.colorDuration = 1000;
+  Perc.changeColor = (function() {
+
+    var tween = new TWEEN.Tween(Perc.Material.color)
+      .onUpdate(function() {
+        Perc.Material.needsUpdate = true;
+      }).onComplete(function() {
+        tween.stop();
+      });;
+
+    return function(c, duration) {
+      tween.to(c, duration || Perc.colorDuration)
+      tween.start();
+    };
+
+  })();
+  Perc.setColor = function(color) {
+    Perc.Material.color.copy(color);
+    Perc.Material.needsUpdate = true;
+  };
 
   material.map.needsUpdate = true;
 

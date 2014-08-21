@@ -5,7 +5,7 @@
 
   var vector = new THREE.Vector3();
   var resolution = 32;
-  var radius = 30;
+  var radius = 40;
   var shape = new THREE.Shape(_.map(_.range(resolution), function(i) {
     var pct = i / resolution;
     var theta = Math.PI * 2 * pct;
@@ -20,19 +20,45 @@
 
   };
 
+  var geometry = shape.makeGeometry();
+  var material = new THREE.MeshBasicMaterial({
+    color: 'purple',
+    transparent: true,
+    side: THREE.DoubleSide
+  });
+
+  Bass.distinction = 1;
   Bass.Offset = 200;
+  Bass.Material = material;
+  Bass.Geometry = geometry;
+  Bass.colorDuration = 1000;
+  Bass.changeColor = (function() {
+
+    var tween = new TWEEN.Tween(Bass.Material.color)
+      .onUpdate(function() {
+        Bass.Material.needsUpdate = true;
+      }).onComplete(function() {
+        tween.stop();
+      });
+
+    return function(c, duration) {
+      tween.to(c, duration || Bass.colorDuration)
+      tween.start();
+    };
+
+  })();
+  Bass.setColor = function(color) {
+    Bass.Material.color.copy(color);
+    Bass.Material.needsUpdate = true;
+  };
 
   Bass.prototype = Object.create(Item.prototype);
 
   _.extend(Bass.prototype, {
 
-    Geometry: shape.makeGeometry(),
+    Geometry: geometry,
 
-    Material: new THREE.MeshBasicMaterial({
-      color: 'purple',
-      transparent: true,
-      side: THREE.DoubleSide
-    }),
+    Material: material,
 
     start: function(origin, direction) {
 

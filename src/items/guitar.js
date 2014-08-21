@@ -13,6 +13,7 @@
 
   };
 
+  Guitar.distinction = 2;
   Guitar.Offset = 300;
 
   var amt = 120;
@@ -32,6 +33,32 @@
     return new THREE.Vector3(x, y, z);
 
   })), 200, 0.5, 32, false);
+  var material = new THREE.MeshBasicMaterial({
+    color: 'brown'
+  });
+
+  Guitar.Geometry = geometry;
+  Guitar.Material = material;
+  Guitar.colorDuration = 1000;
+  Guitar.changeColor = (function() {
+
+    var tween = new TWEEN.Tween(Guitar.Material.color)
+      .onUpdate(function() {
+        Guitar.Material.needsUpdate = true;
+      }).onComplete(function() {
+        tween.stop();
+      });;
+
+    return function(c, duration) {
+      tween.to(c, duration || Hook.colorDuration)
+      tween.start();
+    };
+
+  })();
+  Guitar.setColor = function(color) {
+    Guitar.Material.color.copy(color);
+    Guitar.Material.needsUpdate = true;
+  };
 
   Guitar.prototype = Object.create(Item.prototype);
 
@@ -39,9 +66,7 @@
 
     Geometry: geometry,
 
-    Material: new THREE.MeshBasicMaterial({
-      color: 'brown'
-    }),
+    Material: material,
 
     start: function(origin, direction) {
 

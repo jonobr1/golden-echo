@@ -7,24 +7,29 @@
 
     Item.Object3D.call(this);
 
-    this.add(Timpani.Lines.clone());
-    for (var i = 0; i < Timpani.Spheres.length; i++) {
-      this.add(Timpani.Spheres[i].clone());
+    this.add(new THREE.Line(Timpani.Geometry, Timpani.LineMaterial));
+    for (var i = 0; i < amt; i++) {
+      var mesh = new THREE.Mesh(Timpani.SphereGeometry, Timpani.Material);
+      mesh.position.copy(Timpani.Geometry.vertices[i]);
+      this.add(mesh);
     }
 
   };
 
+  Timpani.distinction = 8;
   Timpani.Offset = 500;
 
   var amt = 6;
 
   Timpani.Material = new THREE.MeshBasicMaterial({ color: 0x333333 });
-  Timpani.Lines = new THREE.Line(new THREE.Geometry(), new THREE.LineBasicMaterial({
-    color: 0x333333,
-    linewidth: 2
-  }));
+  Timpani.LineMaterial = new THREE.LineBasicMaterial();
+  Timpani.LineMaterial.color = Timpani.Material.color;
+  Timpani.LineMaterial.needsUpdate = true;
 
-  Timpani.Lines.geometry.vertices = _.map(_.range(amt + 1), function(i) {
+  Timpani.Geometry = new THREE.Geometry();
+  Timpani.SphereGeometry = new THREE.SphereGeometry(5);
+
+  Timpani.Geometry.vertices = _.map(_.range(amt + 1), function(i) {
     var pct = i / amt;
     var theta = Math.PI * 2 * pct;
     var x = Timpani.Offset * Math.cos(theta);
@@ -32,11 +37,28 @@
     return new THREE.Vector3(x, y, 0);
   });
 
-  Timpani.Spheres = _.map(Timpani.Lines.geometry.vertices, function(v) {
-    var mesh = new THREE.Mesh(new THREE.SphereGeometry(5), Timpani.Material);
-    mesh.position.copy(v);
-    return mesh;
-  });
+  Timpani.colorDuration = 1000;
+  Timpani.changeColor = (function() {
+
+    var tween = new TWEEN.Tween(Timpani.Material.color)
+      .onUpdate(function() {
+        Timpani.Material.needsUpdate = true;
+        Timpani.LineMaterial.needsUpdate = true;
+      }).onComplete(function() {
+        tween.stop();
+      });;
+
+    return function(c, duration) {
+      tween.to(c, duration || Timpani.colorDuration)
+      tween.start();
+    };
+
+  })();
+  Timpani.setColor = function(color) {
+    Timpani.Material.color.copy(color);
+    Timpani.Material.needsUpdate = true;
+    Timpani.LineMaterial.needsUpdate = true;
+  };
 
   Timpani.prototype = Object.create(Item.Object3D.prototype);
 

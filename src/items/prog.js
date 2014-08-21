@@ -4,7 +4,7 @@
   var previousProg = root.Prog || {};
 
   var resetCount = 0, vector = new THREE.Vector3();
-  var width = 20, height = 40;
+  var width = 30, height = 60;
 
   var Prog = root.Prog = function() {
 
@@ -12,24 +12,48 @@
 
   };
 
+  Prog.distinction = 7;
   Prog.Offset = 100;
+
+  var geometry = Prog.Geometry = new THREE.CylinderGeometry(0, width, height, 4, 4);
+  var material = Prog.Material = new THREE.MeshBasicMaterial({
+    color: 0x00e196
+  });
+  Prog.colorDuration = 1000;
+  Prog.changeColor = (function() {
+
+    var tween = new TWEEN.Tween(Prog.Material.color)
+      .onUpdate(function() {
+        Prog.Material.needsUpdate = true;
+      }).onComplete(function() {
+        tween.stop();
+      });;
+
+    return function(c, duration) {
+      tween.to(c, duration || Prog.colorDuration)
+      tween.start();
+    };
+
+  })();
+  Prog.setColor = function(color) {
+    Prog.Material.color.copy(color);
+    Prog.Material.needsUpdate = true;
+  };
 
   Prog.prototype = Object.create(Item.prototype);
 
   _.extend(Prog.prototype, {
 
-    Geometry: new THREE.CylinderGeometry(0, width, height, 4, 4),
+    Geometry: geometry,
 
-    Material: new THREE.MeshBasicMaterial({
-      color: 0x00e196
-    }),
+    Material: material,
 
     start: function(origin, direction) {
 
       Item.prototype.start.call(this, origin, direction);
 
       this.scale.y = this.t * 2 + 1;
-      this.position.y += this.scale.y * height / 4;
+      this.position.y += this.scale.y * height / 2 - 10;
 
       return this;
 

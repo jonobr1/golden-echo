@@ -35,10 +35,31 @@
 
   };
 
-  var geometry = new THREE.BoxGeometry(width, height, depth);
-  var material = new THREE.MeshBasicMaterial({
+  var geometry = Hook.Geometry = new THREE.BoxGeometry(width, height, depth);
+  var material = Hook.Material = new THREE.MeshBasicMaterial({
     color: 0xffff99
   });
+  Hook.distinction = 3;
+  Hook.colorDuration = 1000;
+  Hook.changeColor = (function() {
+
+    var tween = new TWEEN.Tween(Hook.Material.color)
+      .onUpdate(function() {
+        Hook.Material.needsUpdate = true;
+      }).onComplete(function() {
+        tween.stop();
+      });;
+
+    return function(c, duration) {
+      tween.to(c, duration || Hook.colorDuration)
+      tween.start();
+    };
+
+  })();
+  Hook.setColor = function(color) {
+    Hook.Material.color.copy(color);
+    Hook.Material.needsUpdate = true;
+  };
 
   Hook.prototype = Object.create(Item.Object3D.prototype);
 
@@ -57,7 +78,7 @@
       Item.prototype.start.call(this, origin, direction);
 
       var s = this.t + 1;
-      this.scale.set(s, 0, s);
+      this.scale.set(s, 0.01, s);
 
       this.rotation.y = Math.random() * Math.PI * 2;
       this.position.y -= 10;
@@ -68,7 +89,7 @@
 
     update: function(v, t) {
 
-      this.scale.y = Math.abs(Math.sin(this.stepCount));
+      this.scale.y = Math.abs(Math.sin(this.stepCount)) + 0.01;
       this.stepCount += this.spinVelocity;
 
       return this;

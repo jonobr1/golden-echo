@@ -9,7 +9,7 @@
 
     Item.Object3D.call(this);
 
-    this.add(Mellotron.Line.clone());
+    this.add(new THREE.Line(geometry, material));
     this.velocity = new THREE.Vector3(
       (Math.random() - 0.5) * Math.PI / 30,
       (Math.random() - 0.5) * Math.PI / 30,
@@ -18,11 +18,16 @@
 
   };
 
+  Mellotron.distinction = 5;
   Mellotron.Offset = spread = 50;
 
-  var geometry = new THREE.Geometry();
+  var geometry = Mellotron.Geometry = new THREE.Geometry();
+  var material = Mellotron.Material = new THREE.LineBasicMaterial({
+    color: 0x3333ff,
+    linewidth: 4
+  });
   var amt = 7;
-  var radius = 5;
+  var radius = 8;
 
   for (var i = 0; i < 1; i++) {
 
@@ -47,12 +52,33 @@
     }
   }
 
+  Mellotron.colorDuration = 1000;
+  Mellotron.changeColor = (function() {
+
+    var tween = new TWEEN.Tween(Mellotron.Material.color)
+      .onUpdate(function() {
+        Mellotron.Material.needsUpdate = true;
+      }).onComplete(function() {
+        tween.stop();
+      });;
+
+    return function(c, duration) {
+      tween.to(c, duration || Mellotron.colorDuration)
+      tween.start();
+    };
+
+  })();
+  Mellotron.setColor = function(color) {
+    Mellotron.Material.color.copy(color);
+    Mellotron.Material.needsUpdate = true;
+  };
+
   Mellotron.prototype = Object.create(Item.Object3D.prototype);
 
-  Mellotron.Line = new THREE.Line(geometry, new THREE.LineBasicMaterial({
-    color: 0x3333ff,
-    linewidth: 4
-  }));
+  // Mellotron.Line = new THREE.Line(geometry, new THREE.LineBasicMaterial({
+  //   color: 0x3333ff,
+  //   linewidth: 4
+  // }));
 
   _.extend(Mellotron.prototype, {
 
