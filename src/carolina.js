@@ -260,7 +260,7 @@
       };
 
       var speedUp = function(e) {
-        Carolina.camera.destVelocity = Carolina.camera.far * 7 / 1000;;
+        Carolina.camera.destVelocity = Carolina.camera.far * 10 / 1000;;
         px = e.clientX;
         // Carolina.camera.destFov = 45;
       };
