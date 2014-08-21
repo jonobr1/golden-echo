@@ -69,7 +69,9 @@
             var started = false;
 
             Carolina.__onEnded = function() {
-              startButton.fadeIn();
+              startButton.fadeIn(function() {
+                Carolina.pause();
+              });
               eye.two.play();
               started = false;
             };

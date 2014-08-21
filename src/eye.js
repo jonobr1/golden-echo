@@ -12,7 +12,8 @@
     var two = this.two = new Two({
       type: Two.Types.canvas,
       width: width,
-      height: height
+      height: height,
+      ratio: 2
     });
 
     var ball = two.makeGroup();
