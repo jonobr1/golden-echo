@@ -92,8 +92,6 @@
         time: ctx.currentTime
       });
 
-      console.log(this.source);
-
       this.source.stop(params.time);
       this.source.disconnect(ctx.destination);
       delete this.source;

@@ -6,7 +6,15 @@ body {
   font-size: 14px;
   line-height: 20px; }
 
+canvas {
+  -webkit-transition: opacity 0.35s cubic-bezier(0.075, 0.82, 0.165, 1);
+  -moz-transition: opacity 0.35s cubic-bezier(0.075, 0.82, 0.165, 1);
+  transition: opacity 0.35s cubic-bezier(0.075, 0.82, 0.165, 1); }
+
 button {
+  -webkit-transition: opacity 0.35s cubic-bezier(0.075, 0.82, 0.165, 1);
+  -moz-transition: opacity 0.35s cubic-bezier(0.075, 0.82, 0.165, 1);
+  transition: opacity 0.35s cubic-bezier(0.075, 0.82, 0.165, 1);
   background: #6464ff;
   color: #fff;
   display: block;
@@ -72,3 +80,58 @@ button {
   20% {
     transform: scale(1);
     animation-timing-function: cubic-bezier(0.8, 0, 0.8, 1); } }
+
+.loader {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.9) url(../images/ajax-loader.svg) center center no-repeat;
+  background-size: 16px 16px;
+  margin-left: -16px;
+  margin-top: -16px;
+  border-radius: 50%;
+  -webkit-transition: opacity 0.35s cubic-bezier(0.075, 0.82, 0.165, 1);
+  -moz-transition: opacity 0.35s cubic-bezier(0.075, 0.82, 0.165, 1);
+  transition: opacity 0.35s cubic-bezier(0.075, 0.82, 0.165, 1);
+  -webkit-animation-name: rotate;
+  -moz-animation-name: rotate;
+  animation-name: rotate;
+  -webkit-animation-duration: 1s;
+  -moz-animation-duration: 1s;
+  animation-duration: 1s;
+  -webkit-animation-timing-function: cubic-bezier(0.785, 0.135, 0.15, 0.86);
+  -moz-animation-timing-function: cubic-bezier(0.785, 0.135, 0.15, 0.86);
+  animation-timing-function: cubic-bezier(0.785, 0.135, 0.15, 0.86);
+  -webkit-animation-iteration-count: infinite;
+  -moz-animation-iteration-count: infinite;
+  animation-iteration-count: infinite; }
+
+@-webkit-keyframes rotate {
+  from {
+    -webkit-transform: rotate(0); }
+
+  to {
+    -webkit-transform: rotate(360deg); } }
+
+@-moz-keyframes rotate {
+  from {
+    -moz-transform: rotate(0); }
+
+  to {
+    -moz-transform: rotate(360deg); } }
+
+@-o-keyframes rotate {
+  from {
+    -o-transform: rotate(0); }
+
+  to {
+    -o-transform: rotate(360deg); } }
+
+@keyframes rotate {
+  from {
+    transform: rotate(0); }
+
+  to {
+    transform: rotate(360deg); } }

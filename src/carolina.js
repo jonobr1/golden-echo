@@ -36,6 +36,11 @@
   ];
   feelingIt.index = 0;
 
+  var finalStrike = [
+    { startTime: 242.250568000001 * 1000 }
+  ];
+  finalStrike.index = 0;
+
   var colors = {
     lobby: [
       'rgb(255, 255, 255)',
@@ -164,6 +169,8 @@
 
     _ready: false,
 
+    __onEnded: _.identity,
+
     ready: function(f) {
       if (Carolina._ready) {
         f();
@@ -218,7 +225,7 @@
         var group = new THREE.Object3D();
         group.add(mesh);
 
-        mesh.visible = false;
+        // mesh.visible = false;
 
         return group;
 
@@ -262,6 +269,20 @@
       window.addEventListener('mousedown', speedUp, false);
       window.addEventListener('mouseup', slowDown, false);
 
+      window.addEventListener('touchstart', function(e) {
+
+        e.preventDefault();
+
+        var touch = e.changedTouches[0];
+
+        drag({
+          clientX: touch.pageX,
+          clientY: touch.pageY
+        });
+
+        return false;
+
+      }, false);
       window.addEventListener('touchmove', function(e) {
 
         e.preventDefault();
@@ -327,6 +348,7 @@
       Carolina.currentTime = 0;
       pacing.index = 0;
       feelingIt.index = 0;
+      finalStrike.index = 0;
       Carolina.playing = false;
 
       Carolina.audio.stop();
@@ -404,6 +426,11 @@
         // Carolina.camera.fov = 1;
         Carolina.camera.destFov = Carolina.camera.destFov === 70 ? 140 : 70;
         feelingIt.index++;
+      }
+
+      if (finalStrike.index < finalStrike.length && finalStrike[finalStrike.index].startTime <= currentMillis) {
+        Carolina.__onEnded();
+        finalStrike.index++;
       }
 
       Carolina.camera.fov += (Carolina.camera.destFov - Carolina.camera.fov) * 0.0625;
@@ -534,6 +561,10 @@
 
           Carolina.scene.fog.color.copy(color);
           Carolina.renderer.setClearColor(color, 1);
+          document.body.style.background = 'rgb('
+            + Math.floor(color.r * 255) + ','
+            + Math.floor(color.g * 255) + ','
+            + Math.floor(color.b * 255) + ')';
 
         })
         .onComplete(function() {

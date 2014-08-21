@@ -13,9 +13,14 @@ body {
   line-height: $line-height;
 }
 
+canvas {
+  @include transition(opacity 0.35s $ease-out-circ);
+}
+
 button {
 
   // @include button();
+  @include transition(opacity 0.35s $ease-out-circ);
   background: rgb(100, 100, 255);
   color: #fff;
 
@@ -54,5 +59,34 @@ button {
   20% {
     @include transform(scale(1.0));
     @include animation-timing-function(cubic-bezier(.8, 0, .8, 1));
+  }
+}
+
+
+.loader {
+  $d: 32px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: $d;
+  height: $d;
+  background: rgba(255, 255, 255, 0.9) url(../images/ajax-loader.svg) center center no-repeat;
+  background-size: ($d / 2) ($d / 2);
+  margin-left: - ($d / 2);
+  margin-top: - ($d / 2);
+  border-radius: 50%;
+  @include transition(opacity 0.35s $ease-out-circ);
+  @include animation-name(rotate);
+  @include animation-duration(1s);
+  @include animation-timing-function($ease-in-out-circ);
+  @include animation-iteration-count(infinite);
+}
+
+@include keyframes(rotate) {
+  from {
+    @include transform(rotate(0));
+  }
+  to {
+    @include transform(rotate(360deg));
   }
 }

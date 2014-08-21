@@ -1,24 +1,20 @@
 <!doctype html>
 <html>
   <head>
-    <title>~ Let's all go to Carolina ~</title>
+    <title>Carolina</title>
+    <meta name="author" content="jonobr1">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="viewport" content="width=device-width, user-scalable=no">
     <meta name="format-detection" content="telephone=no">
+    <link rel="apple-touch-icon" href="./images/apple-touch-icon.png"/>
+    <link rel="icon" href="./images/favicon.ico" />
     <link type="text/css" rel="stylesheet" href="./styles/main.css">
   </head>
   <body style="position: absolute; overflow: hidden; width: 100%; height: 100%; top: 0; left: 0;">
     <div id="content"></div>
-    <div class="loader">
-      <div class="gmb-loader">
-        <div></div>
-        <div></div>
-        <div></div>
-      </div>
-    </div>
+    <div class="loader"></div>
     <div class="scripts" style="display: none;">
 
-      <script src="./third-party/jquery.js"></script>
       <script src="./third-party/tween.js"></script>
       <script src="./third-party/three.js"></script>
       <script src="./third-party/two.js"></script>
@@ -40,44 +36,94 @@
       <script src="./src/items/mellotron.js"></script>
       <script src="./src/items/vanguard.js"></script>
       <script src="./src/carolina.js"></script>
+      <script src="./src/eye.js"></script>
       <script>
+
+        var eye = new Eye(100, 100, '#00bcf2').appendTo(document.body);
+        eye.watch();
+        var startButton = eye.two.renderer.domElement;
+        _.extend(startButton.style, {
+          position: 'absolute',
+          display: 'none',
+          top: 50 + '%',
+          left: 50 + '%',
+          marginLeft: - 50 + 'px',
+          marginTop: - 50 + 'px',
+          cursor: 'pointer'
+        });
 
         Carolina.init(function() {
 
-          $('.loader').fadeOut(function() {
+          var loader = document.querySelector('.loader');
+          createFades(loader);
 
-            // Add a button here to start things off.
-            var startButton = $('<button />')
-              .css({
-                display: 'none'
-              })
-              // .html('Play')
-              .appendTo(document.body);
+          loader.fadeOut(function(){
 
-            fadeIn();
+            createFades(startButton);
+            document.body.appendChild(startButton);
 
-            Carolina.audio.bind('ended', function() {
-              fadeIn();
-            });
+            startButton.fadeIn();
+            eye.two.play();
 
-            startButton.bind('click', function() {
+            var started = false;
 
-              startButton.fadeOut();
+            Carolina.__onEnded = function() {
+              startButton.fadeIn();
+              eye.two.play();
+              started = false;
+            };
 
-              Carolina.reset({
-                elapsed: url.number('startTime', 0)
+            var start = function() {
+
+              if (started) {
+                return;
+              }
+
+              eye.blink(function() {
+
+                startButton.fadeOut();
+                eye.two.pause();
+
+                Carolina.reset({
+                  elapsed: url.number('startTime', 0)
+                });
+                started = true;
+
               });
 
-            });
+            };
 
-            function fadeIn() {
-              startButton.fadeIn();
-              
-            }
+            startButton.addEventListener('mousedown', start, false);
+            startButton.addEventListener('touchstart', start, false);
+            // startButton.addEventListener('click', start, false);
 
           });
 
         });
+
+        function createFades(elem) {
+          elem.fadeIn = function(callback) {
+            elem.style.display = 'block';
+            elem.style.opacity = 0;
+            _.delay(function() {
+              elem.style.opacity = 1;
+              _.delay(function() {
+                if (_.isFunction(callback)) {
+                  callback();
+                }
+              }, 350);
+            }, 50);
+          };
+          elem.fadeOut = function(callback) {
+            elem.style.opacity = 0;
+            _.delay(function() {
+              elem.style.display = 'none';
+              if (_.isFunction(callback)) {
+                callback();
+              }
+            }, 350);
+          };
+        }
 
       </script>
 
