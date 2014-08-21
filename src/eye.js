@@ -113,6 +113,7 @@
     },
 
     watch: function() {
+      window.addEventListener('touchstart', this._watch, false);
       window.addEventListener('mousemove', this._watch, false);
       window.addEventListener('touchmove', this._watch, false);
       return this;

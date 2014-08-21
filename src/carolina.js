@@ -242,20 +242,26 @@
       Carolina.scene.add(Carolina.camera);
       Carolina.camera.add(Carolina.camera.cone);
 
-      var yaw = new THREE.Vector3();
+      var px = window.innerWidth / 2;
+      var pct = 0.5;
       var drag = function(e) {
 
-        var pct = e.clientX / window.innerWidth;
+        var dpct = ((e.clientX - px) / window.innerWidth) || 0;
+        pct = Math.max(Math.min(pct + dpct, 1), 0);
+
         var dest = (1 - pct) * Carolina.radialBreadth - Carolina.radialBreadth / 2;
         Carolina.camera.cone.rotation.y += (dest - Carolina.camera.cone.rotation.y) * Carolina.drag;
 
-        // pct = e.clientY / window.innerHeight;
-        // Carolina.camera.cone.rotation.x = (1 - pct) * Math.PI / 4 - Math.PI / 8;
+        // // pct = e.clientY / window.innerHeight;
+        // // Carolina.camera.cone.rotation.x = (1 - pct) * Math.PI / 4 - Math.PI / 8;
+
+        px = e.clientX;
 
       };
 
       var speedUp = function(e) {
         Carolina.camera.destVelocity = Carolina.camera.far * 7 / 1000;;
+        px = e.clientX;
         // Carolina.camera.destFov = 45;
       };
       var slowDown = function(e) {
