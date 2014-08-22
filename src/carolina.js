@@ -243,7 +243,9 @@
       Carolina.camera.add(Carolina.camera.cone);
 
       var px = window.innerWidth / 2;
+      var py = window.innerHeight / 2;
       var pct = 0.5;
+      var pcty = 0.5;
       var drag = function(e) {
 
         var dpct = ((e.clientX - px) / window.innerWidth) || 0;
@@ -252,21 +254,27 @@
         var dest = (1 - pct) * Carolina.radialBreadth - Carolina.radialBreadth / 2;
         Carolina.camera.cone.rotation.y += (dest - Carolina.camera.cone.rotation.y) * Carolina.drag;
 
-        // // pct = e.clientY / window.innerHeight;
-        // // Carolina.camera.cone.rotation.x = (1 - pct) * Math.PI / 4 - Math.PI / 8;
-
         px = e.clientX;
+
+        if (!url.boolean('yaxis')) {
+          return;
+        }
+
+        dpct = ((e.clientY - py) / window.innerHeight) || 0;
+        pcty = Math.max(Math.min(pcty + dpct, 1), 0);
+        Carolina.camera.cone.rotation.x = (1 - pcty) * Math.PI / 4 - Math.PI / 8;
+
+        py = e.clientY;
 
       };
 
       var speedUp = function(e) {
         Carolina.camera.destVelocity = Carolina.camera.far * 10 / 1000;;
         px = e.clientX;
-        // Carolina.camera.destFov = 45;
+        py = e.clientY;
       };
       var slowDown = function(e) {
         Carolina.camera.destVelocity = Carolina.camera.far * 5 / 1000;;
-        // Carolina.camera.destFov = 75;
       };
 
       window.addEventListener('touchstart', speedUp, false);
