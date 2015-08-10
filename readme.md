@@ -1,6 +1,6 @@
 # Carolina
 
-<center><iframe width="560" height="315" src="https://www.youtube.com/embed/WWb1y2lsOv0" frameborder="0" allowfullscreen></iframe></center>
+![Carolina, 2015](https://mir-s3-cdn-cf.behance.net/project_modules/disp/bc94f328587235.55c8ec9517524.gif)
 
 ## Synopsis
 
