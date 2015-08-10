@@ -1,5 +1,5 @@
-Carolina
-========
+# Carolina
 
-TODO:
-+ When restarting the track also call TWEEN.flush();
++ Lobby / explaination / loading
++ Carolina Logo
++ Road curvature tied to song

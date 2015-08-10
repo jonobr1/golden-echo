@@ -27,7 +27,7 @@
     Item.PointCloud.call(this);
 
     this.reset();
-    this.position.set(Infinity, Infinity, Infinity);
+    this.position.set(-1000, -1000, -1000);
 
   };
 
@@ -82,7 +82,9 @@
     Perc.Material.needsUpdate = true;
   };
 
-  material.map.needsUpdate = true;
+  if (material.map) {
+    material.map.needsUpdate = true;
+  }
 
   _.extend(Perc.prototype, {
 

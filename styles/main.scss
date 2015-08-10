@@ -11,10 +11,12 @@ $line-height: 20px;
 body {
   font-size: $font-size;
   line-height: $line-height;
+  background: white;
 }
 
 canvas {
   @include transition(opacity 0.35s $ease-out-circ);
+  outline: none;
 }
 
 button {
@@ -43,9 +45,58 @@ button {
   cursor: pointer;
 
   text-align: center;
-  @include animation(throb 2s infinite);
+  @include animation(throb 1s infinite);
   outline: none;
 
+}
+
+#crosshair {
+  @include transition(opacity 0.35s $ease-in-out-circ);
+  @include animation(throb 1s infinite);
+  pointer-events: none;
+  width: 150px;
+  height: 150px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  margin-top: -75px;
+  margin-left: -75px;
+  & > div {
+    position: absolute;
+    width: $font-size / 3;
+    height: $font-size / 3;
+    $border-style: $font-size / 6 solid #fff;
+    &.nw {
+      top: 0;
+      left: 0;
+      border-top: $border-style;
+      border-left: $border-style;
+    }
+    &.ne {
+      top: 0;
+      right: 0;
+      border-top: $border-style;
+      border-right: $border-style;
+    }
+    &.sw {
+      bottom: 0;
+      left: 0;
+      border-bottom: $border-style;
+      border-left: $border-style;
+    }
+    &.se {
+      bottom: 0;
+      right: 0;
+      border-bottom: $border-style;
+      border-right: $border-style;
+    }
+  }
+}
+
+body.lobby {
+  #crosshair {
+    opacity: 0;
+  }
 }
 
 @include keyframes(throb) {
@@ -61,7 +112,6 @@ button {
     @include animation-timing-function(cubic-bezier(.8, 0, .8, 1));
   }
 }
-
 
 .loader {
   $d: 32px;
@@ -80,6 +130,10 @@ button {
   @include animation-duration(1s);
   @include animation-timing-function($ease-in-out-circ);
   @include animation-iteration-count(infinite);
+}
+
+body.titles .loader {
+  display: none;
 }
 
 @include keyframes(rotate) {

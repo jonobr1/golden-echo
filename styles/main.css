@@ -4,12 +4,14 @@
 
 body {
   font-size: 14px;
-  line-height: 20px; }
+  line-height: 20px;
+  background: white; }
 
 canvas {
   -webkit-transition: opacity 0.35s cubic-bezier(0.075, 0.82, 0.165, 1);
   -moz-transition: opacity 0.35s cubic-bezier(0.075, 0.82, 0.165, 1);
-  transition: opacity 0.35s cubic-bezier(0.075, 0.82, 0.165, 1); }
+  transition: opacity 0.35s cubic-bezier(0.075, 0.82, 0.165, 1);
+  outline: none; }
 
 button {
   -webkit-transition: opacity 0.35s cubic-bezier(0.075, 0.82, 0.165, 1);
@@ -30,57 +32,97 @@ button {
   margin-left: -20px;
   cursor: pointer;
   text-align: center;
-  -webkit-animation: throb 2s infinite;
-  -moz-animation: throb 2s infinite;
-  animation: throb 2s infinite;
+  -webkit-animation: throb 1s infinite;
+  -moz-animation: throb 1s infinite;
+  animation: throb 1s infinite;
   outline: none; }
+
+#crosshair {
+  -webkit-transition: opacity 0.35s cubic-bezier(0.785, 0.135, 0.15, 0.86);
+  -moz-transition: opacity 0.35s cubic-bezier(0.785, 0.135, 0.15, 0.86);
+  transition: opacity 0.35s cubic-bezier(0.785, 0.135, 0.15, 0.86);
+  -webkit-animation: throb 1s infinite;
+  -moz-animation: throb 1s infinite;
+  animation: throb 1s infinite;
+  pointer-events: none;
+  width: 150px;
+  height: 150px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  margin-top: -75px;
+  margin-left: -75px; }
+  #crosshair > div {
+    position: absolute;
+    width: 4.66667px;
+    height: 4.66667px; }
+    #crosshair > div.nw {
+      top: 0;
+      left: 0;
+      border-top: 2.33333px solid #fff;
+      border-left: 2.33333px solid #fff; }
+    #crosshair > div.ne {
+      top: 0;
+      right: 0;
+      border-top: 2.33333px solid #fff;
+      border-right: 2.33333px solid #fff; }
+    #crosshair > div.sw {
+      bottom: 0;
+      left: 0;
+      border-bottom: 2.33333px solid #fff;
+      border-left: 2.33333px solid #fff; }
+    #crosshair > div.se {
+      bottom: 0;
+      right: 0;
+      border-bottom: 2.33333px solid #fff;
+      border-right: 2.33333px solid #fff; }
+
+body.lobby #crosshair {
+  opacity: 0; }
 
 @-webkit-keyframes throb {
   0% {
     -webkit-transform: scale(1); }
-
   10% {
     -webkit-transform: scale(1.125);
     -webkit-animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1); }
-
   20% {
     -webkit-transform: scale(1);
     -webkit-animation-timing-function: cubic-bezier(0.8, 0, 0.8, 1); } }
-
 @-moz-keyframes throb {
   0% {
     -moz-transform: scale(1); }
-
   10% {
     -moz-transform: scale(1.125);
     -moz-animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1); }
-
   20% {
     -moz-transform: scale(1);
     -moz-animation-timing-function: cubic-bezier(0.8, 0, 0.8, 1); } }
-
-@-o-keyframes throb {
-  0% {
-    -o-transform: scale(1); }
-
-  10% {
-    -o-transform: scale(1.125); }
-
-  20% {
-    -o-transform: scale(1); } }
-
 @keyframes throb {
   0% {
+    -webkit-transform: scale(1);
+    -moz-transform: scale(1);
+    -ms-transform: scale(1);
+    -o-transform: scale(1);
     transform: scale(1); }
-
   10% {
+    -webkit-transform: scale(1.125);
+    -moz-transform: scale(1.125);
+    -ms-transform: scale(1.125);
+    -o-transform: scale(1.125);
     transform: scale(1.125);
+    -webkit-animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1);
+    -moz-animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1);
     animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1); }
-
   20% {
+    -webkit-transform: scale(1);
+    -moz-transform: scale(1);
+    -ms-transform: scale(1);
+    -o-transform: scale(1);
     transform: scale(1);
+    -webkit-animation-timing-function: cubic-bezier(0.8, 0, 0.8, 1);
+    -moz-animation-timing-function: cubic-bezier(0.8, 0, 0.8, 1);
     animation-timing-function: cubic-bezier(0.8, 0, 0.8, 1); } }
-
 .loader {
   position: absolute;
   top: 50%;
@@ -108,30 +150,31 @@ button {
   -moz-animation-iteration-count: infinite;
   animation-iteration-count: infinite; }
 
+body.titles .loader {
+  display: none; }
+
 @-webkit-keyframes rotate {
   from {
     -webkit-transform: rotate(0); }
-
   to {
     -webkit-transform: rotate(360deg); } }
-
 @-moz-keyframes rotate {
   from {
     -moz-transform: rotate(0); }
-
   to {
     -moz-transform: rotate(360deg); } }
-
-@-o-keyframes rotate {
-  from {
-    -o-transform: rotate(0); }
-
-  to {
-    -o-transform: rotate(360deg); } }
-
 @keyframes rotate {
   from {
+    -webkit-transform: rotate(0);
+    -moz-transform: rotate(0);
+    -ms-transform: rotate(0);
+    -o-transform: rotate(0);
     transform: rotate(0); }
-
   to {
+    -webkit-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
     transform: rotate(360deg); } }
+
+/*# sourceMappingURL=main.css.map */

@@ -113,7 +113,7 @@
       }
 
       this.visible = this.enabled = false;
-      this.position.set(Infinity, Infinity, Infinity);
+      this.position.set(-1000, -1000, -1000);
 
       this.tween.stop();
 

@@ -27,8 +27,7 @@
   Timpani.LineMaterial.needsUpdate = true;
 
   Timpani.Geometry = new THREE.Geometry();
-  Timpani.SphereGeometry = new THREE.SphereGeometry(5);
-
+  Timpani.SphereGeometry = new THREE[THREE.SphereBufferGeometry ? 'SphereBufferGeometry' : 'SphereGeometry'](5);
   Timpani.Geometry.vertices = _.map(_.range(amt + 1), function(i) {
     var pct = i / amt;
     var theta = Math.PI * 2 * pct;

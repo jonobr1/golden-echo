@@ -29,6 +29,9 @@
 
     Sound.get(url, _.bind(function(buffer) {
 
+      this.destination = ctx.createGain();
+      this.destination.connect(ctx.destination);
+
       this.buffer = buffer;
       this._ready = true;
       if (_.isFunction(callback)) {
@@ -68,6 +71,7 @@
           }
         }, function(e) {
           console.log('Error loading', url, e);
+          window.location.reload();
         });
       };
       request.send();
@@ -93,7 +97,7 @@
       });
 
       this.source.stop(params.time);
-      this.source.disconnect(ctx.destination);
+      this.source.disconnect(this.destination);
       delete this.source;
 
       return this;
@@ -105,7 +109,7 @@
       this.elapsed = ctx.currentTime - this.startTime;
 
       this.source.stop();
-      this.source.disconnect(ctx.destination);
+      this.source.disconnect(this.destination);
       delete this.source;
 
       return this;
@@ -123,7 +127,7 @@
 
       this.source = ctx.createBufferSource();
       this.source.buffer = this.buffer;
-      this.source.connect(ctx.destination);
+      this.source.connect(this.destination);
       this.source.loop = params.loop;
       this.source.onended = this.finished;
 
@@ -131,13 +135,25 @@
       var elapsed = params.elapsed || this.elapsed;
 
       if (_.isFunction(this.source.start)) {
-        this.source.start(params.time, elapsed, params.duration - elapsed);
+        this.source.start(params.time);//, elapsed, params.duration - elapsed);
       } else if (_.isFunction(this.source.noteOn)) {
-        this.source.noteOn(params.time, this.elapsed, params.duration - elapsed);
+        this.source.noteOn(params.time);//, elapsed, params.duration - elapsed);
       }
 
       return this;
 
+    }
+
+  });
+
+  Object.defineProperty(Sound.prototype, 'volume', {
+
+    get: function() {
+      return this.destination.gain.value;
+    },
+
+    set: function(v) {
+      this.destination.gain.value = v;
     }
 
   });

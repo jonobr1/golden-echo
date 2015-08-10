@@ -1,0 +1,31 @@
+{
+    "name": "Carolina",
+    "description": "A digital road trip through Kimbra’s track under the same name.",
+    "author": "jonobr1",
+    "manifest_version": 2,
+    "minimum_chrome_version": "43",
+    "version": "0.1.1",
+    "offline_enabled": true,
+    "targetSdkVersion": 22,
+    "icons": {
+        "16": "assets/icons/16.png",
+        "36": "assets/icons/36.png",
+        "48": "assets/icons/48.png",
+        "57": "assets/icons/57.png",
+        "72": "assets/icons/72.png",
+        "96": "assets/icons/96.png",
+        "114": "assets/icons/114.png",
+        "128": "assets/icons/128.png",
+        "144": "assets/icons/144.png"
+    },
+    "app": {
+        "background": {
+            "scripts": [
+                "background.js"
+            ]
+        }
+    },
+    "permissions": [
+        "<all_urls>"
+    ]
+}

@@ -36,7 +36,7 @@
     var lid = this.lid = two.makeEllipse(0, 0, two.height / 3, two.height / 4);
     lid.stroke = '#333';
     lid.curved = false;
-    lid.linewidth = width * 20 / 400;
+    lid.linewidth = width * 20 / 250;
     lid.join = 'round';
     lid.noFill();
 
@@ -71,8 +71,8 @@
         mask.vertices[i].copy(v);
       }
 
-      ball.translation.x += (ball.dest.x - ball.translation.x) * 0.0625;
-      ball.translation.y += (ball.dest.y - ball.translation.y) * 0.0625;
+      ball.translation.x += (ball.dest.x - ball.translation.x) * 0.125;
+      ball.translation.y += (ball.dest.y - ball.translation.y) * 0.125;
 
     });
 
@@ -117,6 +117,13 @@
       window.addEventListener('touchstart', this._watch, false);
       window.addEventListener('mousemove', this._watch, false);
       window.addEventListener('touchmove', this._watch, false);
+      return this;
+    },
+
+    ignore: function() {
+      window.removeEventListener('touchstart', this._watch, false);
+      window.removeEventListener('mousemove', this._watch, false);
+      window.removeEventListener('touchmove', this._watch, false);
       return this;
     },
 

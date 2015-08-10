@@ -29,7 +29,7 @@
     this.spinVelocity = Math.random() * Math.PI / 60 + Math.PI / 60;
     this.spinVeloity *= Math.random() > 0.5 ? 1 : -1;
 
-    this.position.set(Infinity, Infinity, Infinity);
+    this.position.set(-1000, -1000, -1000);
 
   };
 

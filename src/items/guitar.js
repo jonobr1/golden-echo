@@ -9,7 +9,7 @@
 
     Item.call(this);
 
-    this.position.set(Infinity, Infinity, Infinity);
+    this.position.set(-1000, -1000, -1000);
 
   };
 

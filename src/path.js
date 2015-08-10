@@ -3,6 +3,9 @@
   var root = this;
   var previousPath = root.Path || {};
 
+  var m1 = new THREE.Matrix4();
+  var m2 = new THREE.Matrix4();
+
   var Superclass = THREE.Spline, vector = new THREE.Vector3();
 
   var Path = root.Path = function(camera) {
@@ -42,7 +45,14 @@
 
     vector.copy(this.getPoint(1 - this.k));
 
-    this.camera.lookAt(vector);
+    // Convert lookAt to matrix do math from camera rotation and then apply
+    // new Euler onto camera.cone.rotation so we're always looking in the
+    // right direction. oof — maths >_<
+    m1.lookAt(this.camera.cone.position, vector, this.camera.cone.up);
+    m2.makeRotationFromQuaternion(this.camera.quaternion);
+    m2.getInverse(m2).multiply(m1);
+    this.camera.cone.rotation.setFromRotationMatrix(m2);
+
     this.camera.position.copy(vector);
 
     var index = Math.floor(this.k * this.points.length);
