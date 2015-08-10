@@ -18,3 +18,5 @@ The contents of the app itself is divided into two different parts. There is the
 
 The music visualization uses [Three.js](http://threejs.org), a popular three-dimensional drawing api for the web. I place a camera in the world and make it move along a [spline](https://github.com/mrdoob/three.js/blob/master/src/extras/curves/SplineCurve3.js). I then create a number of different types of shapes for the various instruments in the track. As the song plays each shape has specific triggers. When one of these triggers occurs the shape is placed in the impending field of view of the camera. As the camera moves the shape flies by as if we were in a car or a train passing through a landscape.
 
+This repository is the source code to create that project.
+
