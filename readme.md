@@ -20,6 +20,8 @@ The music visualization uses [Three.js](http://threejs.org), a popular three-dim
 
 This repository is the source code to create that project.
 
+### **this is an [android experiment](http://androidexperiments.com)**
+
 The MIT License (MIT)
 
 Copyright (c) 2015 jonobr1
